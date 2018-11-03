@@ -13,8 +13,7 @@ let heaven exist on earth.
 
 let the multiverse exist and be cosmic.
 
-let universe exist within multiverse.
-`
+let universe exist within multiverse.`
 
 export let lexicon = {
   multiverse: ['PlaceHolder'],
@@ -46,17 +45,8 @@ export let lexicon = {
 
 const plugin = {
   words: lexicon,
-  patterns: {
-    '^let * exist *?': 'CreativeForce',
-    'exist within the? * #PlaceHolder+': 'Within',
-    'exist on the? * #PlaceHolder+': 'Within',
-    'exist at the? * #PlaceHolder+': 'Within',
-    'exist in the? * #PlaceHolder+': 'Within',
-    'exist around the? * #PlaceHolder+': 'Within',
-    '^let * be *': 'LetItBe'
-  },
   tags: {
-    Within: {
+    Wrap: {
       isA: 'WordPower'
     },
     CreativeForce: {
@@ -65,6 +55,17 @@ const plugin = {
     LetItBe: {
       isA: 'WordPower'
     }
+  },
+  patterns: {
+    '^let * exist *?': 'CreativeForce',
+    'exist within the? * #PlaceHolder+': 'Wrap',
+    'exist on the? * #PlaceHolder+': 'Wrap',
+    'exist at the? * #PlaceHolder+': 'Wrap',
+    'exist in the? * #PlaceHolder+': 'Wrap',
+    'exist around the? * #PlaceHolder+': 'Wrap',
+    'exist #Perposition the? * #Noun+': 'Wrap',
+
+    '^let * be *': 'LetItBe'
   },
   regex: {
     // '[a-z]iraptor$':'Dinosaur',
@@ -94,16 +95,16 @@ export let mojis = {
   'awesome': '🦄'
 }
 
-export function letsUnderstand ({ paragraph, world }) {
-  let getID = () => {
-    return `_${Number(Math.random() * 1024 * 1024).toFixed(0)}`
-  }
+export let getID = () => {
+  return `_${Number(Math.random() * 1024 * 1024).toFixed(0)}`
+}
 
-  let sentences = nlp(paragraph)
+export function letsUnderstand ({ paragraph, lexicon }) {
+  let sentences = nlp(paragraph, lexicon)
     .sentences()
     .data()
 
-  let langWorld = nlp(paragraph)
+  let langWorld = nlp(paragraph, lexicon)
     .sentences()
     .world()
 
@@ -169,7 +170,7 @@ export function letsUnderstand ({ paragraph, world }) {
                 // child
                 if (
                   sentenceTag.tags.includes('PlaceHolder') &&
-                  !sentenceTag.tags.includes('Within')
+                  !sentenceTag.tags.includes('Wrap')
                 ) {
                   let item = provideByID(sentenceTag.normal)
                   carry.child = carry.child || []
@@ -179,7 +180,7 @@ export function letsUnderstand ({ paragraph, world }) {
                 // parent
                 if (
                   sentenceTag.tags.includes('PlaceHolder') &&
-                  sentenceTag.tags.includes('Within')
+                  sentenceTag.tags.includes('Wrap')
                 ) {
                   if (carry.child) {
                     carry.child.forEach(ch => {
@@ -208,9 +209,7 @@ export function letsUnderstand ({ paragraph, world }) {
               let object = world.find(ww => ww.id === p)
               if (object) {
                 object.data = object.data || {}
-                let be = [
-                  ...(object.data.be || [])
-                ]
+                let be = object.data.be || []
                 spirits.map(s => s.normal).reduce((be, normal) => {
                   if (!be.includes(normal)) {
                     be.push(normal)
@@ -230,7 +229,7 @@ export function letsUnderstand ({ paragraph, world }) {
 
       return ctx
     },
-    { world, debugInfo: [], html: '' }
+    { world: [], debugInfo: [] }
   )
 
   return infoBase

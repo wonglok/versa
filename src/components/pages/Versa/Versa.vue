@@ -32,25 +32,51 @@ export default {
     Tree
   },
   data () {
-    // let words = Object.keys(lexicon)
-    let getList = ({ typeOfTag }) => {
-      return Object.keys(lexicon).reduce((bucket, keyname) => {
-        if (lexicon[keyname].includes(typeOfTag)) {
-          bucket.push(keyname)
-        }
-        return bucket
-      }, [])
-    }
-
-    let typeList = [
-      { keywords: getList({ typeOfTag: 'PlaceHolder' }), name: 'PlaceHolder' },
-      { keywords: getList({ typeOfTag: 'BeHere' }), name: 'BeHere' }
+    /*
+    [
+      ['wordA', 'relatedWordB'],
+      ['wordA', 'relatedWordB'],
+      ['wordA', 'relatedWordB']
     ]
+    */
+    return {
+      lexicon,
+      typeList: [],
+      output: false,
+      paragraph: sampleText,
+      cm: false,
+      cmOptions: {
+        extraKeys: {'Ctrl-Space': 'autocomplete'},
+        // codemirror options
+        keyMap: 'sublime',
+        tabSize: 2,
+        mode: 'versa',
+        // theme: 'chrome',
+        lineWrapping: true,
+        lineNumbers: true,
+        line: true,
+        hintOptions: {
+          customKeys: {
+            'Arrow-Up': '',
+            'Arrow-Down': ''
+          },
+          alignWithWord: false,
+          hint: this.wordSuggestion,
+          closeOnUnfocus: false
+        }
+        // more codemirror options, 更多 codemirror 的高级配置...
+      }
+    }
+  },
+  beforeMount () {
+    this.typeList = this.getTypeList()
+    let self = this
     CodeMirror.defineMode('versa', () => {
       return {
         token (stream, state) {
           let detectedType = null
-          typeList.forEach((et) => {
+
+          self.typeList.forEach((et) => {
             if (detectedType === null) {
               detectedType = et.keywords.reduce((ans, item) => {
                 if (stream.match(item)) {
@@ -67,30 +93,48 @@ export default {
             stream.next()
             return detectedType
           }
-
-          if (stream.match('const')) {
-            return 'style-a'
-          } else if (stream.match('bbb')) {
-            return 'style-b'
-          } else {
-            stream.next()
-            return null
-          }
+          // if (stream.match('const')) {
+          //   return 'style-a'
+          // } else if (stream.match('bbb')) {
+          //   return 'style-b'
+          // } else {
+          //   stream.next()
+          //   return null
+          // }
         }
       }
     })
-    /* eslint-disable */
-
-    /*
-    [
-      ['wordA', 'relatedWordB'],
-      ['wordA', 'relatedWordB'],
-      ['wordA', 'relatedWordB']
-    ]
-    */
-    var comp = typeList.map(tl => tl.keywords)
-
-    let wordSuggestion = (cm, option) => {
+  },
+  mounted () {
+    this.runUpdate()
+  },
+  methods: {
+    getTypeList () {
+      return [
+        { keywords: this.getList({ typeOfTag: 'PlaceHolder' }), name: 'PlaceHolder' },
+        { keywords: this.getList({ typeOfTag: 'BeHere' }), name: 'BeHere' }
+      ]
+    },
+    getList ({ typeOfTag }) {
+      let bucket = []
+      // if (typeOfTag === 'PlaceHolder') {
+      //   nlp(this.paragraph).normalize().match('#CreativeForce+').match('#Noun+').out('array').reduce((reduce, item) => {
+      //     if (!bucket.includes(item)) {
+      //       bucket.push(item)
+      //     }
+      //     return bucket
+      //   }, bucket)
+      // }
+      return Object.keys(lexicon).reduce((bucket, keyname) => {
+        if (lexicon[keyname].includes(typeOfTag) && !bucket.includes(keyname)) {
+          bucket.push(keyname)
+        }
+        return bucket
+      }, bucket)
+    },
+    wordSuggestion (cm, option) {
+      /* eslint-disable */
+      var comp = this.typeList.map(tl => tl.keywords)
       return new Promise(function(resolve, reject) {
         setTimeout(function() {
           var cursor = cm.getCursor(), line = cm.getLine(cursor.line)
@@ -112,41 +156,16 @@ export default {
         }, 0)
       })
       /* eslint-enable */
-    }
-    return {
-      output: false,
-      paragraph: sampleText,
-      cm: false,
-      cmOptions: {
-        extraKeys: {'Ctrl-Space': 'autocomplete'},
-        // codemirror options
-        keyMap: 'sublime',
-        tabSize: 2,
-        mode: 'versa',
-        // theme: 'chrome',
-        lineWrapping: true,
-        lineNumbers: true,
-        line: true,
-        hintOptions: {
-          customKeys: {
-            'Arrow-Up': '',
-            'Arrow-Down': ''
-          },
-          alignWithWord: false,
-          hint: wordSuggestion,
-          closeOnUnfocus: false
-        }
-        // more codemirror options, 更多 codemirror 的高级配置...
-      }
-    }
-  },
-  mounted () {
-    this.runUpdate()
-  },
-  methods: {
+    },
     onCmReady (cm) {
       console.log(cm)
       this.cm = cm
+      cm.on('completion', () => {
+        this.typeList = this.getTypeList()
+        setTimeout(() => {
+          cm.refresh()
+        }, 10)
+      })
       cm.on('cursorActivity', (cm, event) => {
         CodeMirror.commands.autocomplete(cm, null, {completeSingle: true})
       })
@@ -158,7 +177,8 @@ export default {
       })
     },
     runUpdate () {
-      this.output = letsUnderstand({ paragraph: this.paragraph, world: [] })
+      this.typeList = this.getTypeList()
+      this.output = letsUnderstand({ paragraph: this.paragraph, lexicon: this.lexicon })
     }
   },
   watch: {

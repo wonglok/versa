@@ -1,0 +1,53 @@
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: perspective(500px) translateZ(-50px) translateY(50px) rotateX(20deg);
+  }
+  100%{
+    opacity: 1;
+    transform: perspective(500px) rotateX(0deg);
+  }
+}
+
+.CodeMirror {
+  font-family: 'Inconsolata', 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 17px;
+}
+.CodeMirror-gutters{
+  background-color: rgb(255,255,255,0.25);
+  color: black;
+}
+.CodeMirror{
+  height: 100%;
+  width: 100%;
+  background-color: transparent;
+}
+.CodeMirror-hints{
+  /* z-index: 10000; */
+  position: absolute;
+  background-color: white;
+  margin-bottom: 0px;
+  list-style: none;
+  padding: 2px 16px;
+  z-index: 1000;
+
+  animation: fadeIn 0.5s cubic-bezier(0.075, 0.82, 0.165, 1) 0.2s 1 normal both;
+}
+.CodeMirror-hint {
+  margin-bottom: 5px;
+}
+.CodeMirror-hint:hover {
+  text-decoration: underline;
+}
+.CodeMirror-hint-active{
+  /* color: green; */
+  /* text-decoration: underline; */
+}
+.cm-PlaceHolder{
+  border-bottom: hotpink solid 2px;
+}
+.cm-BeHere{
+  border-bottom: green solid 2px;
+}

@@ -9,7 +9,7 @@
           by Wong Lok
         </h3>
 
-        <router-link tag="h2" to="/editor" class="enter">
+        <router-link tag="h2" to="/versa" class="enter">
           Enter
         </router-link>
 

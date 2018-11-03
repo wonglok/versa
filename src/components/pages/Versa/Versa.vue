@@ -10,6 +10,7 @@
         :child="output.world"
       >
       </Tree>
+      <router-link class="go-home" to="/">Home</router-link>
     </div>
   </div>
 
@@ -62,7 +63,7 @@ export default {
           },
           alignWithWord: false,
           hint: this.wordSuggestion,
-          closeOnUnfocus: false
+          closeOnUnfocus: true
         }
         // more codemirror options, 更多 codemirror 的高级配置...
       }
@@ -192,5 +193,9 @@ export default {
 </script>
 
 <style scoped>
-
+.go-home{
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
 </style>

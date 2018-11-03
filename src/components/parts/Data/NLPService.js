@@ -3,10 +3,10 @@ import nlp from 'compromise'
 export let sampleText = `let rainbowverse be fun.
 let multiverse be goodie and joyful.
 let universe be love and light.
-let earth be dope and love and be placed within universe.
-let moon be glowing and amazing and be placed near earth and in universe.
+let earth be dope and love and placed within universe.
+let moon be glowing and amazing and placed near earth and in universe.
 
-let heaven be awesome and be placed on earth, in rainbowverse, multiverse and universe.
+let heaven be awesome and placed on earth, in rainbowverse, multiverse and universe.
 `
 
 export let lexicon = {
@@ -53,11 +53,11 @@ const plugin = {
   patterns: {
     // '^let *?': 'Let',
     '^let *?': 'CreativeForce',
-    'be placed within the? *? #PlaceHolder+ *?': 'Wrap',
-    'be placed on the? *? #PlaceHolder+ *?': 'Wrap',
-    'be placed at the? *? #PlaceHolder+ *?': 'Wrap',
-    'be placed in the? *? #PlaceHolder+ *?': 'Wrap',
-    'be placed near the? *? #PlaceHolder+ *?': 'Wrap',
+    'placed within the? *? #PlaceHolder+ *?': 'Wrap',
+    'placed on the? *? #PlaceHolder+ *?': 'Wrap',
+    'placed at the? *? #PlaceHolder+ *?': 'Wrap',
+    'placed in the? *? #PlaceHolder+ *?': 'Wrap',
+    'placed near the? *? #PlaceHolder+ *?': 'Wrap',
 
     'be #BeHere+ *?': 'LetItBe'
   },

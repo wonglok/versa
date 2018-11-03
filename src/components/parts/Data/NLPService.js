@@ -1,12 +1,12 @@
 import nlp from 'compromise'
 
-export let sampleText = `let multiverse be goodie and joyful.
-let universe be love and light and be placed within multiverse.
+export let sampleText = `let rainbowverse be fun.
+let multiverse be goodie and joyful.
+let universe be love and light.
 let earth be dope and love and be placed within universe.
 let moon be glowing and amazing and be placed near earth and in universe.
 
-let heaven be awesome and be placed on earth, multiverse and universe.
-
+let heaven be awesome and be placed on earth, in rainbowverse, multiverse and universe.
 `
 
 export let lexicon = {
@@ -21,8 +21,6 @@ export let lexicon = {
   earth: ['PlaceHolder'],
   mars: ['PlaceHolder'],
 
-  here: ['BeHere'],
-  there: ['BeHere'],
   glowing: ['BeHere'],
   cosmic: ['BeHere', 'Spacious', 'Spirit'],
   dope: ['BeHere', 'Great', 'Spirit'],
@@ -61,7 +59,7 @@ const plugin = {
     'be placed in the? *? #PlaceHolder+ *?': 'Wrap',
     'be placed near the? *? #PlaceHolder+ *?': 'Wrap',
 
-    'be *?': 'LetItBe'
+    'be #BeHere+ *?': 'LetItBe'
   },
   regex: {
     // '[a-z]iraptor$':'Dinosaur',

@@ -144,7 +144,7 @@ export default {
           var word = line.slice(start, end).toLowerCase()
           for (var i = 0; i < comp.length; i++) {
             if (comp[i].indexOf(word) !== -1) {
-              console.log(word)
+              // console.log(word)
               return resolve({
                 list: comp[i],
                 from: CodeMirror.Pos(cursor.line, start),
@@ -160,12 +160,12 @@ export default {
     onCmReady (cm) {
       console.log(cm)
       this.cm = cm
-      cm.on('completion', () => {
-        this.typeList = this.getTypeList()
-        setTimeout(() => {
-          cm.refresh()
-        }, 10)
-      })
+      // cm.on('completion', () => {
+      //   this.typeList = this.getTypeList()
+      //   setTimeout(() => {
+      //     cm.refresh()
+      //   }, 10)
+      // })
       cm.on('cursorActivity', (cm, event) => {
         CodeMirror.commands.autocomplete(cm, null, {completeSingle: true})
       })

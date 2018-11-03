@@ -1,19 +1,13 @@
 import nlp from 'compromise'
 
-export const sampleText = `let the universe exist.
-let earth and heaven exist within the universe.
-let venus exist within the universe.
+export let sampleText = `let multiverse be goodie and joyful.
+let universe be love and light and be placed within multiverse.
+let earth be dope and love and be placed within universe.
+let moon be glowing and amazing and be placed near earth and in universe.
 
-let heaven and earth be love and light and exist within multiverse.
-let universe be fun.
-let moon be glowing.
-let venus be happy.
+let heaven be awesome and be placed on earth, multiverse and universe.
 
-let heaven exist on earth.
-
-let the multiverse exist and be cosmic.
-
-let universe exist within multiverse.`
+`
 
 export let lexicon = {
   multiverse: ['PlaceHolder'],
@@ -27,6 +21,8 @@ export let lexicon = {
   earth: ['PlaceHolder'],
   mars: ['PlaceHolder'],
 
+  here: ['BeHere'],
+  there: ['BeHere'],
   glowing: ['BeHere'],
   cosmic: ['BeHere', 'Spacious', 'Spirit'],
   dope: ['BeHere', 'Great', 'Spirit'],
@@ -57,15 +53,15 @@ const plugin = {
     }
   },
   patterns: {
-    '^let * exist *?': 'CreativeForce',
-    'exist within the? * #PlaceHolder+': 'Wrap',
-    'exist on the? * #PlaceHolder+': 'Wrap',
-    'exist at the? * #PlaceHolder+': 'Wrap',
-    'exist in the? * #PlaceHolder+': 'Wrap',
-    'exist around the? * #PlaceHolder+': 'Wrap',
-    'exist #Perposition the? * #Noun+': 'Wrap',
+    // '^let *?': 'Let',
+    '^let *?': 'CreativeForce',
+    'be placed within the? *? #PlaceHolder+ *?': 'Wrap',
+    'be placed on the? *? #PlaceHolder+ *?': 'Wrap',
+    'be placed at the? *? #PlaceHolder+ *?': 'Wrap',
+    'be placed in the? *? #PlaceHolder+ *?': 'Wrap',
+    'be placed near the? *? #PlaceHolder+ *?': 'Wrap',
 
-    '^let * be *': 'LetItBe'
+    'be *?': 'LetItBe'
   },
   regex: {
     // '[a-z]iraptor$':'Dinosaur',
@@ -139,6 +135,19 @@ export function letsUnderstand ({ paragraph, lexicon }) {
             type: info.id,
             sentence
           })
+          let provideByID = id => {
+            let result = world.find(w => w.id === id)
+            if (!result) {
+              let newMe = {
+                uuid: getID(),
+                id
+              }
+              world.push(newMe)
+              return newMe
+            } else {
+              return result
+            }
+          }
 
           if (doc.has('#CreativeForce+')) {
             doc
@@ -147,20 +156,6 @@ export function letsUnderstand ({ paragraph, lexicon }) {
               // .filter(p => p.tags.includes('PlaceHolder'))
               .reduce((carry, sentenceTag) => {
                 // console.log(sentenceTag.normal, sentenceTag.tags)
-
-                let provideByID = id => {
-                  let result = world.find(w => w.id === id)
-                  if (!result) {
-                    let newMe = {
-                      uuid: getID(),
-                      id
-                    }
-                    world.push(newMe)
-                    return newMe
-                  } else {
-                    return result
-                  }
-                }
 
                 // create roots
                 if (sentenceTag.tags.includes('PlaceHolder')) {
@@ -204,25 +199,27 @@ export function letsUnderstand ({ paragraph, lexicon }) {
           if (doc.has('#LetItBe+')) {
             let places = doc.match('#PlaceHolder+').out('tags')
             let spirits = doc.match('#BeHere+').out('tags')
+            places
+              // only apply to the subject
+              .filter(t => !t.tags.includes('Wrap'))
+              .map(t => t.normal).forEach(p => {
+                let object = world.find(ww => ww.id === p)
+                if (object) {
+                  object.data = object.data || {}
+                  let be = object.data.be || []
+                  spirits.map(s => s.normal).reduce((be, normal) => {
+                    if (!be.includes(normal)) {
+                      be.push(normal)
+                    }
+                    return be
+                  }, be)
 
-            places.map(t => t.normal).forEach(p => {
-              let object = world.find(ww => ww.id === p)
-              if (object) {
-                object.data = object.data || {}
-                let be = object.data.be || []
-                spirits.map(s => s.normal).reduce((be, normal) => {
-                  if (!be.includes(normal)) {
-                    be.push(normal)
+                  object.data = {
+                    ...object.data,
+                    be
                   }
-                  return be
-                }, be)
-
-                object.data = {
-                  ...object.data,
-                  be
                 }
-              }
-            })
+              })
           }
         }
       })

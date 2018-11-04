@@ -10,6 +10,7 @@
         :child="output.world"
       >
       </Tree>
+      <pre style="background-color: white; max-width: 50vw; overflow: auto; max-height: 450px">{{ output }}</pre>
       <router-link class="go-home" to="/">Home</router-link>
     </div>
   </div>
@@ -33,13 +34,6 @@ export default {
     Tree
   },
   data () {
-    /*
-    [
-      ['wordA', 'relatedWordB'],
-      ['wordA', 'relatedWordB'],
-      ['wordA', 'relatedWordB']
-    ]
-    */
     return {
       lexicon,
       typeList: [],
@@ -57,10 +51,10 @@ export default {
         lineNumbers: true,
         line: true,
         hintOptions: {
-          customKeys: {
-            'Arrow-Up': '',
-            'Arrow-Down': ''
-          },
+          // customKeys: {
+          //   'Arrow-Up': '',
+          //   'Arrow-Down': ''
+          // },
           alignWithWord: false,
           hint: this.wordSuggestion,
           closeOnUnfocus: true
@@ -126,6 +120,7 @@ export default {
       //     return bucket
       //   }, bucket)
       // }
+
       return Object.keys(lexicon).reduce((bucket, keyname) => {
         if (lexicon[keyname].includes(typeOfTag) && !bucket.includes(keyname)) {
           bucket.push(keyname)
@@ -134,6 +129,13 @@ export default {
       }, bucket)
     },
     wordSuggestion (cm, option) {
+      /*
+      [
+        ['wordA', 'relatedWordB'],
+        ['wordA', 'relatedWordB'],
+        ['wordA', 'relatedWordB']
+      ]
+      */
       /* eslint-disable */
       var comp = this.typeList.map(tl => tl.keywords)
       return new Promise(function(resolve, reject) {
@@ -159,7 +161,7 @@ export default {
       /* eslint-enable */
     },
     onCmReady (cm) {
-      console.log(cm)
+      // console.log(cm)
       this.cm = cm
       // cm.on('completion', () => {
       //   this.typeList = this.getTypeList()
@@ -167,12 +169,14 @@ export default {
       //     cm.refresh()
       //   }, 10)
       // })
+
       cm.on('cursorActivity', (cm, event) => {
         CodeMirror.commands.autocomplete(cm, null, {completeSingle: true})
       })
+
       cm.on('keyup', (cm, event) => {
         if (!cm.state.completionActive && /* Enables keyboard navigation in autocomplete list */
-          event.keyCode !== 13) { /* Enter - do not open autocomplete list just after item has been selected in it */
+          event.keyCode !== 13 && event.keyCode !== 27) { /* Enter - do not open autocomplete list just after item has been selected in it */
           CodeMirror.commands.autocomplete(cm, null, {completeSingle: true})
         }
       })

@@ -9,34 +9,36 @@ let moon be glowing and amazing and placed near earth and in universe.
 let heaven be awesome and placed on earth, in rainbowverse, multiverse and universe.
 
 let words and ideas be heard.
-  `
+
+let you be happy and placed on earth, universe and multiverse and rainbowverse.
+`
 
 export let lexicon = {
-  multiverse: ['PlaceHolder'],
-  universe: ['PlaceHolder'],
-  rainbowverse: ['PlaceHolder'],
+  // multiverse: ['PlaceHolder'],
+  // universe: ['PlaceHolder'],
+  // rainbowverse: ['PlaceHolder'],
 
-  heaven: ['PlaceHolder'],
+  // heaven: ['PlaceHolder'],
 
-  venus: ['PlaceHolder'],
-  moon: ['PlaceHolder'],
-  earth: ['PlaceHolder'],
-  mars: ['PlaceHolder'],
+  // venus: ['PlaceHolder'],
+  // moon: ['PlaceHolder'],
+  // earth: ['PlaceHolder'],
+  // mars: ['PlaceHolder'],
 
-  glowing: ['BeHere'],
-  cosmic: ['BeHere', 'Spacious', 'Spirit'],
-  dope: ['BeHere', 'Great', 'Spirit'],
-  fun: ['BeHere', 'Fun', 'Spirit'],
-  goodie: ['BeHere', 'Fun', 'Spirit'],
-  amazing: ['BeHere', 'Love', 'Spirit'],
-  love: ['BeHere', 'Love', 'Spirit'],
-  light: ['BeHere', 'Love', 'Spirit'],
-  happiness: ['BeHere', 'Love', 'Spirit'],
-  happy: ['BeHere', 'Love', 'Spirit'],
-  godly: ['BeHere', 'Love', 'Spirit'],
-  joyful: ['BeHere', 'Love', 'Spirit'],
-  joy: ['BeHere', 'Love', 'Spirit'],
-  awesome: ['BeHere', 'Love', 'Spirit']
+  // glowing: ['BeHere'],
+  // cosmic: ['BeHere', 'Spacious', 'Spirit'],
+  // dope: ['BeHere', 'Great', 'Spirit'],
+  // fun: ['BeHere', 'Fun', 'Spirit'],
+  // goodie: ['BeHere', 'Fun', 'Spirit'],
+  // amazing: ['BeHere', 'Love', 'Spirit'],
+  // love: ['BeHere', 'Love', 'Spirit'],
+  // light: ['BeHere', 'Love', 'Spirit'],
+  // happiness: ['BeHere', 'Love', 'Spirit'],
+  // happy: ['BeHere', 'Love', 'Spirit'],
+  // godly: ['BeHere', 'Love', 'Spirit'],
+  // joyful: ['BeHere', 'Love', 'Spirit'],
+  // joy: ['BeHere', 'Love', 'Spirit'],
+  // awesome: ['BeHere', 'Love', 'Spirit']
 }
 
 export let mojis = {
@@ -59,7 +61,14 @@ export let mojis = {
 export let getID = () => {
   return `_${Number(Math.random() * 1024 * 1024).toFixed(0)}`
 }
-
+export function toTitleCase (str) {
+  return str.replace(
+    /\w\S*/g,
+    function (txt) {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+    }
+  )
+}
 export function getLexicon ({ paragraph }) {
   let myLexicon = JSON.parse(JSON.stringify(lexicon))
   const plugin = {
@@ -107,8 +116,13 @@ export function getLexicon ({ paragraph }) {
     .forEach((item) => {
       let lex = myLexicon[item.normal] = myLexicon[item.normal] || []
       if (!lex.includes('PlaceHolder')) {
-        lex.push('PlaceHolder', ...item.tags)
+        lex.push('PlaceHolder')
       }
+      item.tags.forEach((tag) => {
+        if (!lex.includes(tag)) {
+          lex.push(tag)
+        }
+      })
     })
 
   nlp(paragraph)
@@ -121,9 +135,15 @@ export function getLexicon ({ paragraph }) {
     .forEach((item) => {
       let lex = myLexicon[item.normal] = myLexicon[item.normal] || []
       if (!lex.includes('PlaceHolder')) {
-        lex.push('PlaceHolder', ...item.tags)
+        lex.push('PlaceHolder')
       }
+      item.tags.forEach((tag) => {
+        if (!lex.includes(tag)) {
+          lex.push(tag)
+        }
+      })
     })
+  nlp.plugin(plugin)
 
   nlp(paragraph)
     .match('#LetItBe+')
@@ -133,13 +153,18 @@ export function getLexicon ({ paragraph }) {
     .not('be')
     .out('tags')
     .forEach((item) => {
-      console.log(item)
       let lex = myLexicon[item.normal] = myLexicon[item.normal] || []
       if (!lex.includes('BeHere')) {
-        lex.push('BeHere', ...item.tags)
+        lex.push('BeHere')
       }
+      item.tags.forEach((tag) => {
+        if (!lex.includes(tag)) {
+          lex.push(tag)
+        }
+      })
     })
 
+  nlp.plugin(plugin)
   return myLexicon
 }
 
@@ -148,7 +173,7 @@ export function letsUnderstand ({ paragraph }) {
   getLexicon({ paragraph: paragraph })
 
   nlp(paragraph)
-    .match('#WordPower')
+    // .match('#WordPower')
     .sentences()
     .data()
     .map(s => s.text)

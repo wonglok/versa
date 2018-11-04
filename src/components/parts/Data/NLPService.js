@@ -7,7 +7,9 @@ let earth be dope and love and placed within universe.
 let moon be glowing and amazing and placed near earth and in universe.
 
 let heaven be awesome and placed on earth, in rainbowverse, multiverse and universe.
-`
+
+let words and ideas be heard.
+  `
 
 export let lexicon = {
   multiverse: ['PlaceHolder'],
@@ -58,9 +60,10 @@ export let getID = () => {
   return `_${Number(Math.random() * 1024 * 1024).toFixed(0)}`
 }
 
-export function letsUnderstand ({ paragraph, lexicon }) {
+export function getLexicon ({ paragraph }) {
+  let myLexicon = JSON.parse(JSON.stringify(lexicon))
   const plugin = {
-    words: lexicon,
+    words: myLexicon,
     tags: {
       Wrap: {
         isA: 'WordPower'
@@ -75,13 +78,14 @@ export function letsUnderstand ({ paragraph, lexicon }) {
     patterns: {
       // '^let *?': 'Let',
       '^let *?': 'CreativeForce',
-      'placed within the? *? #PlaceHolder+ *?': 'Wrap',
-      'placed on the? *? #PlaceHolder+ *?': 'Wrap',
-      'placed at the? *? #PlaceHolder+ *?': 'Wrap',
-      'placed in the? *? #PlaceHolder+ *?': 'Wrap',
-      'placed near the? *? #PlaceHolder+ *?': 'Wrap',
 
-      'be #BeHere+ *?': 'LetItBe'
+      'placed within the? *?': 'Wrap',
+      'placed on the? *?': 'Wrap',
+      'placed at the? *?': 'Wrap',
+      'placed in the? *?': 'Wrap',
+      'placed near the? *?': 'Wrap',
+
+      'be *?': 'LetItBe'
     },
     regex: {
       // '[a-z]iraptor$':'Dinosaur',
@@ -93,105 +97,154 @@ export function letsUnderstand ({ paragraph, lexicon }) {
   }
   nlp.plugin(plugin)
 
-  let sentences = nlp(paragraph, lexicon)
+  nlp(paragraph)
+    .match('#CreativeForce+')
+    .match('let [*] (be|placed)')
+    .not('#Preposition')
+    .not('#Conjunction')
+    .not('let')
+    .out('tags')
+    .forEach((item) => {
+      let lex = myLexicon[item.normal] = myLexicon[item.normal] || []
+      if (!lex.includes('PlaceHolder')) {
+        lex.push('PlaceHolder', ...item.tags)
+      }
+    })
+
+  nlp(paragraph)
+    .match('#Wrap+')
+    .not('#Preposition')
+    .not('#Conjunction')
+    .not('placed')
+    .not('near')
+    .out('tags')
+    .forEach((item) => {
+      let lex = myLexicon[item.normal] = myLexicon[item.normal] || []
+      if (!lex.includes('PlaceHolder')) {
+        lex.push('PlaceHolder', ...item.tags)
+      }
+    })
+
+  nlp(paragraph)
+    .match('#LetItBe+')
+    .not('#Preposition')
+    .not('#Conjunction')
+    .not('#Wrap+')
+    .not('be')
+    .out('tags')
+    .forEach((item) => {
+      console.log(item)
+      let lex = myLexicon[item.normal] = myLexicon[item.normal] || []
+      if (!lex.includes('BeHere')) {
+        lex.push('BeHere', ...item.tags)
+      }
+    })
+
+  return myLexicon
+}
+
+export function letsUnderstand ({ paragraph }) {
+  let brain = { world: [] }
+  getLexicon({ paragraph: paragraph })
+
+  nlp(paragraph)
+    .match('#WordPower')
     .sentences()
     .data()
+    .map(s => s.text)
+    .reduce((brain, sentence) => {
+      let world = brain.world
+      let doc = nlp(sentence)
 
-  let brain = { world: [] }
-
-  sentences.map(s => s.text).reduce((brain, sentence) => {
-    let world = brain.world
-    let doc = nlp(sentence)
-
-    let provideByID = id => {
-      let result = world.find(w => w.id === id)
-      if (!result) {
-        let newMe = {
-          uuid: getID(),
-          id
+      let provideByID = id => {
+        let result = world.find(w => w.id === id)
+        if (!result) {
+          let newMe = {
+            uuid: getID(),
+            id
+          }
+          world.push(newMe)
+          return newMe
+        } else {
+          return result
         }
-        world.push(newMe)
-        return newMe
-      } else {
-        return result
       }
-    }
 
-    if (doc.has('#CreativeForce+')) {
-      doc
-        .match('#CreativeForce+')
-        .out('tags')
-        // .filter(p => p.tags.includes('PlaceHolder'))
-        .reduce((carry, sentenceTag) => {
-          // console.log(sentenceTag.normal, sentenceTag.tags)
+      if (doc.has('#CreativeForce+')) {
+        doc
+          .match('#CreativeForce+')
+          .out('tags')
+          // .filter(p => p.tags.includes('PlaceHolder'))
+          .reduce((carry, sentenceTag) => {
+            // console.log(sentenceTag.normal, sentenceTag.tags)
 
-          // create roots
-          if (sentenceTag.tags.includes('PlaceHolder')) {
-            provideByID(sentenceTag.normal)
-          }
-
-          // child
-          if (
-            sentenceTag.tags.includes('PlaceHolder') &&
-            !sentenceTag.tags.includes('Wrap')
-          ) {
-            let item = provideByID(sentenceTag.normal)
-            carry.child = carry.child || []
-            carry.child.push(item)
-          }
-
-          // parent
-          if (
-            sentenceTag.tags.includes('PlaceHolder') &&
-            sentenceTag.tags.includes('Wrap')
-          ) {
-            if (carry.child) {
-              carry.child.forEach(ch => {
-                // ch.parentID = sentenceTag.normal
-                ch.parentIDs = ch.parentIDs || []
-
-                if (
-                  !ch.parentIDs.includes(sentenceTag.normal) &&
-                  ch.id !== sentenceTag.normal
-                ) {
-                  ch.parentIDs.push(sentenceTag.normal)
-                }
-              })
+            // create roots
+            if (sentenceTag.tags.includes('PlaceHolder')) {
+              provideByID(sentenceTag.normal)
             }
-          }
 
-          return carry
-        }, {})
-    }
+            // child
+            if (
+              sentenceTag.tags.includes('PlaceHolder') &&
+              !sentenceTag.tags.includes('Wrap')
+            ) {
+              let item = provideByID(sentenceTag.normal)
+              carry.child = carry.child || []
+              carry.child.push(item)
+            }
 
-    if (doc.has('#LetItBe+')) {
-      let places = doc.match('#PlaceHolder+').out('tags')
-      let spirits = doc.match('#BeHere+').out('tags')
-      places
-        // only apply to the subject
-        .filter(t => !t.tags.includes('Wrap'))
-        .map(t => t.normal).forEach(p => {
-          let object = world.find(ww => ww.id === p)
-          if (object) {
-            object.data = object.data || {}
-            let be = object.data.be || []
-            spirits.map(s => s.normal).reduce((be, normal) => {
-              if (!be.includes(normal)) {
-                be.push(normal)
+            // parent
+            if (
+              sentenceTag.tags.includes('PlaceHolder') &&
+              sentenceTag.tags.includes('Wrap')
+            ) {
+              if (carry.child) {
+                carry.child.forEach(ch => {
+                  // ch.parentID = sentenceTag.normal
+                  ch.parentIDs = ch.parentIDs || []
+
+                  if (
+                    !ch.parentIDs.includes(sentenceTag.normal) &&
+                    ch.id !== sentenceTag.normal
+                  ) {
+                    ch.parentIDs.push(sentenceTag.normal)
+                  }
+                })
               }
-              return be
-            }, be)
-
-            object.data = {
-              ...object.data,
-              be
             }
-          }
-        })
-    }
 
-    return brain
-  }, brain)
+            return carry
+          }, {})
+      }
+
+      if (doc.has('#LetItBe+')) {
+        let places = doc.match('#PlaceHolder+').out('tags')
+        let spirits = doc.match('#BeHere+').out('tags')
+        places
+          // only apply to the subject
+          .filter(t => !t.tags.includes('Wrap'))
+          .map(t => t.normal).forEach(p => {
+            let object = world.find(ww => ww.id === p)
+            if (object) {
+              object.data = object.data || {}
+              let be = object.data.be || []
+              spirits.map(s => s.normal).reduce((be, normal) => {
+                if (!be.includes(normal)) {
+                  be.push(normal)
+                }
+                return be
+              }, be)
+
+              object.data = {
+                ...object.data,
+                be
+              }
+            }
+          })
+      }
+
+      return brain
+    }, brain)
 
   return brain
 }

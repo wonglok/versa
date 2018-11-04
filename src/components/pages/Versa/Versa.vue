@@ -10,7 +10,7 @@
         :child="output.world"
       >
       </Tree>
-      <pre style="background-color: white; max-width: 50vw; overflow: auto; max-height: 450px">{{ output }}</pre>
+      <pre style="background-color: white; max-width: 50vw; overflow: auto; max-height: 400px">{{ { lexicon: lexicon, world: output.world } }}</pre>
       <router-link class="go-home" to="/">Home</router-link>
     </div>
   </div>
@@ -25,7 +25,7 @@ import Tree from '@/components/parts/Tree/Tree.vue'
 import CodeMirror from 'codemirror'
 import 'codemirror/keymap/sublime.js'
 import 'codemirror/addon/hint/show-hint.js'
-import { lexicon, sampleText, letsUnderstand } from '@/components/parts/Data/NLPService.js'
+import { sampleText, letsUnderstand, getLexicon } from '@/components/parts/Data/NLPService.js'
 // import nlp from 'compromise'
 
 export default {
@@ -35,7 +35,7 @@ export default {
   },
   data () {
     return {
-      lexicon,
+      lexicon: getLexicon({ paragraph: sampleText }),
       typeList: [],
       output: false,
       paragraph: sampleText,
@@ -121,8 +121,8 @@ export default {
       //   }, bucket)
       // }
 
-      return Object.keys(lexicon).reduce((bucket, keyname) => {
-        if (lexicon[keyname].includes(typeOfTag) && !bucket.includes(keyname)) {
+      return Object.keys(this.lexicon).reduce((bucket, keyname) => {
+        if (this.lexicon[keyname].includes(typeOfTag) && !bucket.includes(keyname)) {
           bucket.push(keyname)
         }
         return bucket
@@ -169,21 +169,29 @@ export default {
       //     cm.refresh()
       //   }, 10)
       // })
+      this.acTimeout = 0
+      let tryOepnAC = () => {
+        clearTimeout(this.acTimeout)
+        this.acTimeout = setTimeout(() => {
+          CodeMirror.commands.autocomplete(cm, null, {completeSingle: true})
+        }, 550)
+      }
 
       cm.on('cursorActivity', (cm, event) => {
-        CodeMirror.commands.autocomplete(cm, null, {completeSingle: true})
+        tryOepnAC()
       })
 
       cm.on('keyup', (cm, event) => {
         if (!cm.state.completionActive && /* Enables keyboard navigation in autocomplete list */
           event.keyCode !== 13 && event.keyCode !== 27) { /* Enter - do not open autocomplete list just after item has been selected in it */
-          CodeMirror.commands.autocomplete(cm, null, {completeSingle: true})
+          tryOepnAC()
         }
       })
     },
     runUpdate () {
+      this.lexicon = getLexicon({ paragraph: this.paragraph })
+      this.output = letsUnderstand({ paragraph: this.paragraph })
       this.typeList = this.getTypeList()
-      this.output = letsUnderstand({ paragraph: this.paragraph, lexicon: this.lexicon })
     }
   },
   watch: {

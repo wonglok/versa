@@ -6,11 +6,12 @@
     </div>
     <div class="ed-right">
       <Tree
-        :world="output.world"
-        :child="output.world"
+        v-if="brain && brain.world"
+        :world="brain.world"
+        :child="brain.world"
       >
       </Tree>
-      <pre style="background-color: white; max-width: 50vw; overflow: auto; max-height: 400px">{{ { lexicon: lexicon, world: output.world } }}</pre>
+      <pre style="background-color: white; max-width: 50vw; overflow: auto; max-height: 400px">{{ { lexicon: lexicon, world: brain.world } }}</pre>
       <router-link class="go-home" to="/">Home</router-link>
     </div>
   </div>
@@ -25,7 +26,7 @@ import Tree from '@/components/parts/Tree/Tree.vue'
 import CodeMirror from 'codemirror'
 import 'codemirror/keymap/sublime.js'
 import 'codemirror/addon/hint/show-hint.js'
-import { sampleText, letsUnderstand, getLexicon } from '@/components/parts/Data/NLPService.js'
+import { sampleText, getBrain } from '@/components/parts/Data/NLPService.js'
 // import nlp from 'compromise'
 
 export default {
@@ -34,10 +35,11 @@ export default {
     Tree
   },
   data () {
+    let { brain, lexicon } = getBrain({ paragraph: sampleText })
     return {
-      lexicon: getLexicon({ paragraph: sampleText }),
+      brain,
+      lexicon,
       typeList: [],
-      output: false,
       paragraph: sampleText,
       cm: false,
       cmOptions: {
@@ -106,13 +108,13 @@ export default {
   methods: {
     getTypeList () {
       return [
-        { keywords: this.getList({ typeOfTag: 'PlaceHolder' }), name: 'PlaceHolder' },
-        { keywords: this.getList({ typeOfTag: 'BeHere' }), name: 'BeHere' }
+        { keywords: this.getList({ typeOfTag: 'Existence' }), name: 'Existence' },
+        { keywords: this.getList({ typeOfTag: 'Being' }), name: 'Being' }
       ]
     },
     getList ({ typeOfTag }) {
       let bucket = []
-      // if (typeOfTag === 'PlaceHolder') {
+      // if (typeOfTag === 'Existence') {
       //   nlp(this.paragraph).normalize().match('#CreativeForce+').match('#Noun+').out('array').reduce((reduce, item) => {
       //     if (!bucket.includes(item)) {
       //       bucket.push(item)
@@ -190,8 +192,9 @@ export default {
       })
     },
     runUpdate () {
-      this.lexicon = getLexicon({ paragraph: this.paragraph })
-      this.output = letsUnderstand({ paragraph: this.paragraph })
+      let { brain, lexicon } = getBrain({ paragraph: this.paragraph })
+      this.brain = brain
+      this.lexicon = lexicon
       this.typeList = this.getTypeList()
     }
   },

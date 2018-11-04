@@ -3,7 +3,7 @@
     <li v-if="error" style="color: red">{{ error }}</li>
     <li class="item-wrapper" :key="w.id" v-for="w in child" v-if="isroot && !w.parentIDs || !isroot">
       <div>
-        {{ w.id }} - <span v-if="w.data">be: {{ emojify(w.data.be) }}</span>
+        {{ w.id }} - <span v-if="w.data && w.data.be">be: {{ emojify(w.data.be) }}</span>
       </div>
       <Tree
         v-if="getKids(w.id).length > 0 && checkLoop(w.id)"

@@ -45,9 +45,9 @@
   color: green;
   /* text-decoration: underline; */
 }
-.cm-PlaceHolder{
+.cm-Existence{
   border-bottom: hotpink solid 2px;
 }
-.cm-BeHere{
-  border-bottom: green solid 2px;
+.cm-Being{
+  border-bottom: rgb(0, 113, 128) solid 2px;
 }

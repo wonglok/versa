@@ -169,6 +169,7 @@ export default {
       //     cm.refresh()
       //   }, 10)
       // })
+
       this.acTimeout = 0
       let tryOepnAC = () => {
         clearTimeout(this.acTimeout)

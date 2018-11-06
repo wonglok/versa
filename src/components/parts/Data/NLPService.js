@@ -63,7 +63,7 @@ export let lexicon = {
 
 export let mojis = {
   'glowing': '💫',
-  'cosmic': '����',
+  'cosmic': '🌌',
   'dope': '🥰',
   'fun': '😂',
   'goodie': '👍🏻',
@@ -207,7 +207,7 @@ export const readSentenceWords = ({ paragraph }) => {
         .match('let .+ be [.+]')
         .not('the')
         .not('and')
-        .debug()
+        // .debug()
         .out('tags')
         .forEach((tag) => {
           worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Being', item: tag })

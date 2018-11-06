@@ -10,8 +10,8 @@ may heaven and earth exist.
 # Let things be
 
 let the universe and heaven be love and light.
-let the multiverse and rainbowverse be dope and fun.
-let the earth be pizza and happiness.
+let the multiverse and heaven be dope and fun.
+let the earth, rainbowverse and heaven be pizza and happiness.
 
 # Organise
 
@@ -29,7 +29,7 @@ place moon around rainbowverse.
 
 {{ let earth be glowing }}
 may apple exist.
-let apple be fruit.
+let apple be fun.
 place apple in heaven.
 `
 

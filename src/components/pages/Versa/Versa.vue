@@ -11,7 +11,7 @@
         :child="brain.world"
       >
       </Tree>
-      <pre style="background-color: white; max-width: 50vw; overflow: auto; max-height: 400px">{{ brain }}</pre>
+      <!-- <pre style="background-color: white; max-width: 50vw; overflow: auto; max-height: 400px">{{ brain }}</pre> -->
       <router-link class="go-home" to="/">Home</router-link>
     </div>
   </div>

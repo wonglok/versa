@@ -4,8 +4,8 @@ export let sampleText = `## Verse Your Kindness.
 
 # Make existence
 
-let there be the universe, the multiverse and the rainbowverse.
-let there be heaven and earth.
+may the universe, the multiverse and the rainbowverse exist.
+may heaven and earth exist.
 
 # Let things be
 
@@ -28,7 +28,7 @@ let moon be glowing.
 place moon around rainbowverse.
 
 {{ let earth be glowing }}
-let there be apple.
+may apple exist.
 let apple be fruit.
 place apple in heaven.
 `
@@ -170,48 +170,51 @@ export const readSentenceWords = ({ paragraph }) => {
   let worldAPI = makeWorldAPI({ world })
 
   paragraph = mcgill.cleanQuote(paragraph)
-  nlp.plugin({
-    tags: {},
-    words: myLexi,
-    patterns: {},
-    regex: {},
-    plurals: {}
-  })
+  paragraph = paragraph.replace(/\./g, '. ')
+
+  let refreshDictionary = () => {
+    nlp.plugin({
+      tags: {},
+      words: { ...myLexi },
+      patterns: {},
+      regex: {},
+      plurals: {}
+    })
+  }
+  refreshDictionary()
+
   let doc = nlp(paragraph)
 
   doc
     .sentences()
+    .data()
+    .map(s => s.text)
     .forEach((sentence) => {
-      sentence
-        .match('^let there be [*]')
+      nlp(sentence)
+        .match('may [*] exist')
         .not('the')
         .not('and')
 
-        .tag('Existence')
         .out('tags')
         .forEach((tag) => {
           worldAPI.provideByID(tag.normal)
           worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Existence', item: tag })
         })
-      sentence
-        .match('^let !(here|there) * be the? [*]')
+
+      refreshDictionary()
+
+      nlp(sentence)
+        .match('let .+ be [.+]')
         .not('the')
         .not('and')
-
-        .tag('Being')
+        .debug()
         .out('tags')
         .forEach((tag) => {
           worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Being', item: tag })
         })
     })
 
-  nlp.plugin({
-    tags: {},
-    words: myLexi,
-    patterns: {},
-    regex: {},
-    plurals: {}
-  })
+  refreshDictionary()
 
   // exec with our lexicon
   nlp(doc.out('text'))
@@ -223,20 +226,20 @@ export const readSentenceWords = ({ paragraph }) => {
     })
 
   nlp(doc.out('text'))
-    .match('^place the? *? (at|in|on|near|within|around) the? *?')
+    .match('place the? #Existence+ (at|in|on|near|within|around) the? #Existence+')
     .forEach((sentence) => {
-      let scan = sentence
-        .match('^place the? * (at|in|on|near|within|around) [*]')
+      let parentPlaces = sentence
+        .match('place the? #Existence+ (at|in|on|near|within|around) the? [#Existence+]')
         .not('the')
         .out('array')
 
       sentence
         .match('#Existence+')
         .out('array')
-        .filter(e => !scan.includes(e))
+        .filter(e => !parentPlaces.includes(e))
         .forEach((existenceTag) => {
           worldAPI.provideByID(existenceTag)
-          worldAPI.providePlacing(existenceTag, scan)
+          worldAPI.providePlacing(existenceTag, parentPlaces)
         })
     })
 

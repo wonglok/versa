@@ -72,28 +72,27 @@ export default {
       }
       let worker = data.worker = new NLPWorker()
       worker.addEventListener('message', (evt) => {
-        if (evt.data.type === 'init') {
+        if (evt.data.type === 'app-init') {
           data.paragraph = evt.data.paragraph
         }
-        if (evt.data.type === 'understand' || evt.data.type === 'input') {
+        if (evt.data.type === 'process') {
           let { brain, lexicon } = evt.data.result
           data.brain = brain
           data.lexicon = lexicon
           data.typeList = this.getTypeList()
-
-          if (evt.data.type === 'input') {
-            clearTimeout(worker.timeout)
-            worker.timeout = setTimeout(() => {
-              prepWork()
-            }, 750)
-          }
+        }
+        if (evt.data.type === 'refresh') {
+          clearTimeout(worker.timeout)
+          worker.timeout = setTimeout(() => {
+            prepWork()
+          }, 65)
         }
       })
-      worker.postMessage({ type: 'understand', paragraph: data.paragraph || sampleText })
+      worker.postMessage({ type: 'process', paragraph: data.paragraph || sampleText })
     }
     prepWork()
     if (data.worker) {
-      data.worker.postMessage({ type: 'init', paragraph: sampleText })
+      data.worker.postMessage({ type: 'app-init', paragraph: sampleText })
     }
 
     // let { brain, lexicon } = readSentenceWords({ paragraph: sampleText })
@@ -245,7 +244,7 @@ export default {
     },
     runUpdate () {
       if (this.worker) {
-        this.worker.postMessage({ type: 'input', paragraph: this.paragraph })
+        this.worker.postMessage({ type: 'refresh', paragraph: this.paragraph })
       }
     }
   },

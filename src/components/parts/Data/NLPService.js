@@ -1,17 +1,17 @@
-import nlp from 'compromise'
+const nlp = require('compromise')
 
 export let sampleText = `## Verse Your Kindness.
 
 # Make existence
 
 may the universe, the multiverse and the rainbowverse exist.
-may heaven and earth exist.
+may the heaven and the earth exist.
 
 # Let things be
 
 let the universe and heaven be love and light.
 let the multiverse and heaven be dope and fun.
-let the earth, rainbowverse and heaven be pizza and happiness.
+let the earth, the rainbowverse and heaven be pizza and happiness.
 
 # Organise
 
@@ -27,7 +27,7 @@ may moon exist.
 let moon be glowing.
 place moon around rainbowverse.
 
-{{ let earth be glowing }}
+{{ let earth be glowing. }}
 may apple exist.
 let apple be fun.
 place apple in heaven.
@@ -159,8 +159,92 @@ mcgill.cleanQuote = (str) => {
     match = match.replace(/{.*?{(.*?)}.*?}/g, '$1')
     // quote = match[1] + match[2] + match[3]
     // match = match.replace(/\+\+/g,'')
-    return match + '.\n\n'
+    return match + '\n'
   })
+}
+
+export const readSentence = ({ paragraph }) => {
+  let myLexi = JSON.parse(JSON.stringify(lexicon))
+  let world = []
+  let brain = { world, paragraph }
+  let worldAPI = makeWorldAPI({ world })
+
+  paragraph = mcgill.cleanQuote(paragraph)
+  paragraph = paragraph.replace(/\./g, '. ')
+
+  let refreshDictionary = () => {
+    nlp.plugin({
+      tags: {},
+      words: { ...myLexi },
+      patterns: {},
+      regex: {},
+      plurals: {}
+    })
+  }
+  refreshDictionary()
+
+  let doc = nlp(paragraph)
+
+  doc
+    // .sentences()
+    .data()
+    .map(s => s.text)
+    .forEach((sentence) => {
+      refreshDictionary()
+
+      nlp(sentence)
+        .match('may the? [*] exist')
+        .not('the')
+        .not('and')
+        .out('tags')
+        .forEach((tag) => {
+          worldAPI.provideByID(tag.normal)
+          worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Existence', item: tag })
+        })
+
+      nlp(sentence)
+        .match(`!exist? let *? #Existence+ *? be [*]`)
+        .not('the')
+        .not('and')
+        .out('tags')
+        .forEach((tag) => {
+          worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Being', item: tag })
+        })
+    })
+
+  refreshDictionary()
+
+  // exec with our lexicon
+  nlp(doc.out('text'))
+    .forEach((sentence) => {
+      sentence.match('#Existence+').out('array').forEach((existenceTag) => {
+        worldAPI.provideByID(existenceTag)
+        worldAPI.provideBeing(existenceTag, sentence.match('#Being+').out('array'))
+      })
+    })
+
+  nlp(doc.out('text'))
+    .match('place the? #Existence+ (at|in|on|near|within|around) the? #Existence+')
+    .forEach((sentence) => {
+      let parentPlaces = sentence
+        .match('place the? #Existence+ (at|in|on|near|within|around) the? [#Existence+]')
+        .not('the')
+        .out('array')
+
+      sentence
+        .match('#Existence+')
+        .out('array')
+        .filter(e => !parentPlaces.includes(e))
+        .forEach((existenceTag) => {
+          worldAPI.provideByID(existenceTag)
+          worldAPI.providePlacing(existenceTag, parentPlaces)
+        })
+    })
+
+  return {
+    lexicon: myLexi,
+    brain
+  }
 }
 
 export const readSentenceWords = ({ paragraph }) => {
@@ -186,28 +270,26 @@ export const readSentenceWords = ({ paragraph }) => {
   let doc = nlp(paragraph)
 
   doc
-    .sentences()
+    // .sentences()
     .data()
     .map(s => s.text)
     .forEach((sentence) => {
+      refreshDictionary()
+
       nlp(sentence)
-        .match('may [*] exist')
+        .match('may the? [*] exist')
         .not('the')
         .not('and')
-
         .out('tags')
         .forEach((tag) => {
           worldAPI.provideByID(tag.normal)
           worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Existence', item: tag })
         })
 
-      refreshDictionary()
-
       nlp(sentence)
-        .match('let .+ be [.+]')
+        .match(`!exist? let *? #Existence+ *? be [*]`)
         .not('the')
         .not('and')
-        // .debug()
         .out('tags')
         .forEach((tag) => {
           worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Being', item: tag })

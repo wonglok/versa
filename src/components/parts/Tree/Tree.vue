@@ -1,7 +1,7 @@
 <template>
   <ul class="array-wrapper tree">
     <li v-if="error" style="color: red">{{ error }}</li>
-    <li class="item-wrapper" :key="w.id" v-for="w in child" v-if="isroot && !w.parentIDs || !isroot">
+    <li class="item-wrapper" :key="w.id" v-for="w in child" v-if="isroot && !w.data.parentIDs || !isroot">
       <div>
         {{ w.id }} - <span v-if="w.data && w.data.be">be: {{ emojify(w.data.be) }}</span>
       </div>
@@ -18,6 +18,7 @@
 
 <script>
 import { mojis } from '@/components/parts/Data/NLPService.js'
+var emoji = require('node-emoji')
 
 export default {
   components: {
@@ -39,7 +40,7 @@ export default {
   methods: {
     emojify (arr) {
       let result = arr.reduce((str, item) => {
-        str += (mojis[item] || item) + ' '
+        str += (mojis[item] || emoji.emojify(emoji.get(item), t => t) || item) + ' '
         return str
       }, '')
       return result
@@ -69,7 +70,7 @@ export default {
       return result
     },
     getKids (id) {
-      let kids = this.world.filter(ww => ww.parentIDs && ww.parentIDs.includes(id))
+      let kids = this.world.filter(ww => ww.data.parentIDs && ww.data.parentIDs.includes(id))
       return kids
     }
     // getChild (id) {

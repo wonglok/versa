@@ -42,12 +42,39 @@
   text-decoration: underline;
 }
 .CodeMirror-hint-active{
+  font-weight: bold;
   color: green;
   /* text-decoration: underline; */
 }
+.cm-ParagraphTitle-3{
+  font-size: 35px;
+  font-weight: bold;
+  border-bottom: rgb(31, 182, 202) dashed 2px;
+}
+.cm-ParagraphTitle-2{
+  font-size: 25px;
+  font-weight: bold;
+  border-bottom: rgb(31, 182, 202) dashed 2px;
+}
+.cm-ParagraphTitle-1{
+  font-weight: bold;
+  border-bottom: rgb(31, 182, 202) dashed 2px;
+}
+
+.cm-Quote{
+  background: rgb(253, 255, 134, 0.5);
+}
+
 .cm-Existence{
   border-bottom: hotpink solid 2px;
 }
 .cm-Being{
-  border-bottom: rgb(0, 113, 128) solid 2px;
+  border-bottom: rgb(31, 182, 202) solid 2px;
+}
+
+.cm-Quote.cm-Existence{
+  border-bottom: hotpink solid 2px;
+}
+.cm-Quote.cm-Being{
+  border-bottom: rgb(31, 182, 202) solid 2px;
 }

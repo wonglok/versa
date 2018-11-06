@@ -100,10 +100,16 @@
   border-bottom: hotpink solid 3px;
 }
 
-.array-wrapper,
+.array-wrapper{
+  margin: 0px;
+  padding: 5px 10px;
+}
 .item-wrapper{
-  margin: 10px;
-  border: grey solid 1px;
+  margin: 10px 10px;
+  padding: 5px;
+  border-left: grey solid 2px;
+  border-top: silver dotted 1px;
+  border-bottom: silver dotted 1px;
 }
 
 .alt-items:hover{

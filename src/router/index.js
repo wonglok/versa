@@ -11,12 +11,12 @@ export default new Router({
     {
       path: '/',
       name: 'HelloWorld',
-      component: () => import('@/components/HelloWorld')
+      component: require('@/components/HelloWorld').default
     },
     {
       path: '/versa',
       name: 'Versa',
-      component: () => import('@/components/pages/Versa/Versa.vue')
+      component: require('@/components/pages/Versa/Versa.vue').default
     },
     {
       path: '/about',

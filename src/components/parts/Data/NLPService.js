@@ -1,7 +1,36 @@
 import nlp from 'compromise'
 
-export let sampleText = `let there be the universe.
-let the universe be love and light.
+export let sampleText = `## Verse Your Kindness.
+
+# Make existence
+
+let there be the universe, the multiverse and the rainbowverse.
+let there be heaven and earth.
+
+# Let things be
+
+let the universe and heaven be love and light.
+let the multiverse and rainbowverse be dope and fun.
+let the earth be pizza and happiness.
+
+# Organise
+
+place the earth within the universe.
+place heaven within universe.
+place heaven within multiverse.
+place heaven on earth.
+place earth within rainbowverse.
+
+# Extend description
+
+may moon exist.
+let moon be glowing.
+place moon around rainbowverse.
+
+{{ let earth be glowing }}
+let there be apple.
+let apple be fruit.
+place apple in heaven.
 `
 
 export let lexicon = {
@@ -16,25 +45,25 @@ export let lexicon = {
   // earth: ['Existence'],
   // mars: ['Existence'],
 
-  // glowing: ['BeHere'],
-  // cosmic: ['BeHere', 'Spacious', 'Spirit'],
-  // dope: ['BeHere', 'Great', 'Spirit'],
-  // fun: ['BeHere', 'Fun', 'Spirit'],
-  // goodie: ['BeHere', 'Fun', 'Spirit'],
-  // amazing: ['BeHere', 'Love', 'Spirit'],
-  // love: ['BeHere', 'Love', 'Spirit'],
-  // light: ['BeHere', 'Love', 'Spirit'],
-  // happiness: ['BeHere', 'Love', 'Spirit'],
-  // happy: ['BeHere', 'Love', 'Spirit'],
-  // godly: ['BeHere', 'Love', 'Spirit'],
-  // joyful: ['BeHere', 'Love', 'Spirit'],
-  // joy: ['BeHere', 'Love', 'Spirit'],
-  // awesome: ['BeHere', 'Love', 'Spirit']
+  // glowing: ['Being'],
+  // cosmic: ['Being'],
+  // dope: ['Being'],
+  // fun: ['Being'],
+  // goodie: ['Being'],
+  // amazing: ['Being'],
+  // love: ['Being'],
+  // light: ['Being'],
+  // happiness: ['Being'],
+  // happy: ['Being'],
+  // godly: ['Being'],
+  // joyful: ['Being'],
+  // joy: ['Being'],
+  // awesome: ['Being']
 }
 
 export let mojis = {
   'glowing': '💫',
-  'cosmic': '🌌',
+  'cosmic': '����',
   'dope': '🥰',
   'fun': '😂',
   'goodie': '👍🏻',
@@ -52,6 +81,7 @@ export let mojis = {
 export let getID = () => {
   return `_${Number(Math.random() * 1024 * 1024).toFixed(0)}`
 }
+
 export function toTitleCase (str) {
   return str.replace(
     /\w\S*/g,
@@ -61,45 +91,7 @@ export function toTitleCase (str) {
   )
 }
 
-export function getBrain ({ paragraph }) {
-  let world = []
-  let brain = { world }
-  let myLexicon = JSON.parse(JSON.stringify(lexicon))
-  const plugin = {
-    words: myLexicon,
-    tags: {
-      // Placing: {
-      //   isA: 'WordPower'
-      // },
-      // CreativeForce: {
-      //   isA: 'WordPower'
-      // },
-      // LetItBe: {
-      //   isA: 'WordPower'
-      // }
-    },
-    patterns: {
-      '^let there be [.+]': 'MarkLetThereBe',
-      '^let the? #Existence+ be [*]': 'MarkBeings',
-
-      '^let the? [#Existence+ be #Being+]': 'RunLetExistenceBe'
-      // // '^let *?': 'Let',
-      // '^let there be [*]': 'CreativeForce',
-      // '^place the? . within the? .': 'Placing',
-      // '^place the? . in the? .': 'Placing',
-      // '^place the? . on the? .': 'Placing',
-      // '^place the? . at the? .': 'Placing'
-    },
-    regex: {
-      // '[a-z]iraptor$':'Dinosaur',
-    }
-    // plurals:{
-    //   brontosaurus: 'brontosauri',
-    //   stegosaurus: 'stegosauruses'
-    // }
-  }
-  nlp.plugin(plugin)
-
+export const makeWorldAPI = ({ world }) => {
   let provideByID = id => {
     let result = world.find(w => w.id === id)
     if (!result) {
@@ -118,78 +110,138 @@ export function getBrain ({ paragraph }) {
   let provideBeing = (id, beings = []) => {
     let result = world.find(w => w.id === id)
     result.data.be = result.data.be || []
-    result.data.be.push(...beings)
-  }
-
-  let cleanTags = (b) => {
-    return b.not('#Preposition')
-      .not('#Conjunction')
-      .not('placed')
-      .not('let')
-      .not('the')
-      .out('tags')
-  }
-
-  let letThereBe = () => {
-    let b = nlp(paragraph).match('#MarkLetThereBe')
-    return cleanTags(b)
-  }
-
-  // scan existance
-  letThereBe()
-    .forEach((item) => {
-      let lex = myLexicon[item.normal] = myLexicon[item.normal] || []
-      if (!lex.includes('Existence')) {
-        lex.push('Existence')
+    beings.forEach(be => {
+      if (!result.data.be.includes(be)) {
+        result.data.be.push(be)
       }
-      item.tags.forEach((tag) => {
-        if (!lex.includes(tag)) {
-          lex.push(tag)
-        }
-      })
     })
-  nlp.plugin(plugin)
-
-  let letExistenceBe = () => {
-    let b = nlp(paragraph)
-      .match('#MarkBeings')
-    return cleanTags(b)
   }
 
-  // scan being
-  letExistenceBe()
-    .forEach((item) => {
-      let lex = myLexicon[item.normal] = myLexicon[item.normal] || []
-      if (!lex.includes('Being')) {
-        lex.push('Being')
+  let providePlacing = (id, placedAts = []) => {
+    let result = world.find(w => w.id === id)
+    result.data.parentIDs = result.data.parentIDs || []
+    placedAts.forEach(place => {
+      if (!result.data.parentIDs.includes(place) && id !== place) {
+        result.data.parentIDs.push(place)
       }
-      item.tags.forEach((tag) => {
-        if (!lex.includes(tag)) {
-          lex.push(tag)
-        }
-      })
+    })
+  }
+
+  let tagsToLexicon = ({ lexicon, tagName, item }) => {
+    let lexObj = lexicon[item.normal] = lexicon[item.normal] || []
+    if (!lexObj.includes(tagName)) {
+      lexObj.unshift(tagName)
+    }
+    item.tags.forEach((tag) => {
+      if (!lexObj.includes(tag)) {
+        lexObj.unshift(tag)
+      }
+    })
+  }
+
+  return {
+    tagsToLexicon,
+    provideByID,
+    provideBeing,
+    providePlacing
+  }
+}
+
+export const mcgill = {}
+mcgill.cleanQuote = (str) => {
+  return str.replace(/{(.*?){(.*?)}(.*?)}/g, (match) => {
+    //
+    // return match[1];
+    if (match[1] === 'x') { return '' }
+
+    match = match.replace(/\++}/g, '}')
+    match = match.replace(/-}/g, '}')
+    match = match.replace(/{.*?{(.*?)}.*?}/g, '$1')
+    // quote = match[1] + match[2] + match[3]
+    // match = match.replace(/\+\+/g,'')
+    return match + '.\n\n'
+  })
+}
+
+export const readSentenceWords = ({ paragraph }) => {
+  let myLexi = JSON.parse(JSON.stringify(lexicon))
+  let world = []
+  let brain = { world, paragraph }
+  let worldAPI = makeWorldAPI({ world })
+
+  paragraph = mcgill.cleanQuote(paragraph)
+  nlp.plugin({
+    tags: {},
+    words: myLexi,
+    patterns: {},
+    regex: {},
+    plurals: {}
+  })
+  let doc = nlp(paragraph)
+
+  doc
+    .sentences()
+    .forEach((sentence) => {
+      sentence
+        .match('^let there be [*]')
+        .not('the')
+        .not('and')
+
+        .tag('Existence')
+        .out('tags')
+        .forEach((tag) => {
+          worldAPI.provideByID(tag.normal)
+          worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Existence', item: tag })
+        })
+      sentence
+        .match('^let !(here|there) * be the? [*]')
+        .not('the')
+        .not('and')
+
+        .tag('Being')
+        .out('tags')
+        .forEach((tag) => {
+          worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Being', item: tag })
+        })
     })
 
-  nlp.plugin(plugin)
+  nlp.plugin({
+    tags: {},
+    words: myLexi,
+    patterns: {},
+    regex: {},
+    plurals: {}
+  })
 
-  // let things exist
-  letThereBe()
-    .forEach(tag => {
-      provideByID(tag.normal)
-    })
-
-  // let things be
-  nlp(paragraph)
-    .match('^let the? #Existence+ be #Being+ *?')
+  // exec with our lexicon
+  nlp(doc.out('text'))
     .forEach((sentence) => {
       sentence.match('#Existence+').out('array').forEach((existenceTag) => {
-        provideByID(existenceTag)
-        provideBeing(existenceTag, sentence.match('#Being+').out('array'))
+        worldAPI.provideByID(existenceTag)
+        worldAPI.provideBeing(existenceTag, sentence.match('#Being+').out('array'))
       })
+    })
+
+  nlp(doc.out('text'))
+    .match('^place the? *? (at|in|on|near|within|around) the? *?')
+    .forEach((sentence) => {
+      let scan = sentence
+        .match('^place the? * (at|in|on|near|within|around) [*]')
+        .not('the')
+        .out('array')
+
+      sentence
+        .match('#Existence+')
+        .out('array')
+        .filter(e => !scan.includes(e))
+        .forEach((existenceTag) => {
+          worldAPI.provideByID(existenceTag)
+          worldAPI.providePlacing(existenceTag, scan)
+        })
     })
 
   return {
-    lexicon: myLexicon,
+    lexicon: myLexi,
     brain
   }
 }

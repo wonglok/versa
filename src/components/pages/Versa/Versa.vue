@@ -11,7 +11,7 @@
         :child="brain.world"
       >
       </Tree>
-      <pre style="background-color: white; max-width: 50vw; overflow: auto; max-height: 400px">{{ { lexicon: lexicon, world: brain.world } }}</pre>
+      <pre style="background-color: white; max-width: 50vw; overflow: auto; max-height: 400px">{{ brain }}</pre>
       <router-link class="go-home" to="/">Home</router-link>
     </div>
   </div>
@@ -26,8 +26,10 @@ import Tree from '@/components/parts/Tree/Tree.vue'
 import CodeMirror from 'codemirror'
 import 'codemirror/keymap/sublime.js'
 import 'codemirror/addon/hint/show-hint.js'
-import { sampleText, getBrain } from '@/components/parts/Data/NLPService.js'
-// import nlp from 'compromise'
+import { sampleText } from '@/components/parts/Data/NLPService.js'
+/* eslint-disable */
+import NLPWorker from '@/components/parts/Data/nlp.worker.js'
+/* eslint-enable */
 
 export default {
   components: {
@@ -35,12 +37,12 @@ export default {
     Tree
   },
   data () {
-    let { brain, lexicon } = getBrain({ paragraph: sampleText })
-    return {
-      brain,
-      lexicon,
+    let data = {
+      worker: false,
+      brain: false,
+      lexicon: {},
       typeList: [],
-      paragraph: sampleText,
+      paragraph: null,
       cm: false,
       cmOptions: {
         extraKeys: {'Ctrl-Space': 'autocomplete'},
@@ -64,13 +66,50 @@ export default {
         // more codemirror options, 更多 codemirror 的高级配置...
       }
     }
+    let prepWork = () => {
+      if (data.worker) {
+        data.worker.terminate()
+      }
+      let worker = data.worker = new NLPWorker()
+      worker.addEventListener('message', (evt) => {
+        if (evt.data.type === 'init') {
+          data.paragraph = evt.data.paragraph
+        }
+        if (evt.data.type === 'understand' || evt.data.type === 'input') {
+          let { brain, lexicon } = evt.data.result
+          data.brain = brain
+          data.lexicon = lexicon
+          data.typeList = this.getTypeList()
+
+          if (evt.data.type === 'input') {
+            clearTimeout(worker.timeout)
+            worker.timeout = setTimeout(() => {
+              prepWork()
+            }, 750)
+          }
+        }
+      })
+      worker.postMessage({ type: 'understand', paragraph: data.paragraph || sampleText })
+    }
+    prepWork()
+    if (data.worker) {
+      data.worker.postMessage({ type: 'init', paragraph: sampleText })
+    }
+
+    // let { brain, lexicon } = readSentenceWords({ paragraph: sampleText })
+    return data
   },
   beforeMount () {
-    this.typeList = this.getTypeList()
+    // this.typeList = this.getTypeList()
     let self = this
     CodeMirror.defineMode('versa', () => {
+      var parserState = {
+        quoteIsOpen: false
+      }
       return {
         token (stream, state) {
+          let title = ''
+          let quote = ''
           let detectedType = null
 
           self.typeList.forEach((et) => {
@@ -84,12 +123,31 @@ export default {
             }
           })
 
-          if (detectedType) {
-            return detectedType
-          } else if (detectedType === null) {
-            stream.next()
-            return detectedType
+          if (stream.match(/### .+/g)) {
+            title += ' ParagraphTitle-3'
+          } else if (stream.match(/## .+/g)) {
+            title += ' ParagraphTitle-2'
+          } else if (stream.match(/# .+/g)) {
+            title += ' ParagraphTitle-1'
           }
+
+          if (stream.match(/{/, false)) {
+            parserState.quoteIsOpen = true
+          }
+          if (stream.match(/}/, false)) {
+            quote = 'Quote'
+            parserState.quoteIsOpen = false
+          }
+          if (parserState.quoteIsOpen) {
+            quote = 'Quote'
+          }
+
+          let output = (detectedType ? detectedType + ' ' : '') + title + quote
+          if (detectedType === null) {
+            stream.next()
+          }
+
+          return output
           // if (stream.match('const')) {
           //   return 'style-a'
           // } else if (stream.match('bbb')) {
@@ -103,25 +161,18 @@ export default {
     })
   },
   mounted () {
-    this.runUpdate()
+    // this.runUpdate()
   },
   methods: {
     getTypeList () {
       return [
+        { keywords: this.getList({ typeOfTag: 'ParagraphTitle' }), name: 'ParagraphTitle' },
         { keywords: this.getList({ typeOfTag: 'Existence' }), name: 'Existence' },
         { keywords: this.getList({ typeOfTag: 'Being' }), name: 'Being' }
       ]
     },
     getList ({ typeOfTag }) {
       let bucket = []
-      // if (typeOfTag === 'Existence') {
-      //   nlp(this.paragraph).normalize().match('#CreativeForce+').match('#Noun+').out('array').reduce((reduce, item) => {
-      //     if (!bucket.includes(item)) {
-      //       bucket.push(item)
-      //     }
-      //     return bucket
-      //   }, bucket)
-      // }
 
       return Object.keys(this.lexicon).reduce((bucket, keyname) => {
         if (this.lexicon[keyname].includes(typeOfTag) && !bucket.includes(keyname)) {
@@ -165,6 +216,7 @@ export default {
     onCmReady (cm) {
       // console.log(cm)
       this.cm = cm
+      cm.toggleComment = () => {}
       // cm.on('completion', () => {
       //   this.typeList = this.getTypeList()
       //   setTimeout(() => {
@@ -177,7 +229,7 @@ export default {
         clearTimeout(this.acTimeout)
         this.acTimeout = setTimeout(() => {
           CodeMirror.commands.autocomplete(cm, null, {completeSingle: true})
-        }, 550)
+        }, 450)
       }
 
       cm.on('cursorActivity', (cm, event) => {
@@ -192,10 +244,9 @@ export default {
       })
     },
     runUpdate () {
-      let { brain, lexicon } = getBrain({ paragraph: this.paragraph })
-      this.brain = brain
-      this.lexicon = lexicon
-      this.typeList = this.getTypeList()
+      if (this.worker) {
+        this.worker.postMessage({ type: 'input', paragraph: this.paragraph })
+      }
     }
   },
   watch: {

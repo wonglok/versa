@@ -67,9 +67,6 @@ export default {
       }
     }
     let prepWork = () => {
-      if (data.worker) {
-        data.worker.terminate()
-      }
       let worker = data.worker = new NLPWorker()
       worker.addEventListener('message', (evt) => {
         if (evt.data.type === 'app-init') {
@@ -80,12 +77,19 @@ export default {
           data.brain = brain
           data.lexicon = lexicon
           data.typeList = this.getTypeList()
+          this.refreshing = true
+          this.cm && CodeMirror.commands.undo(this.cm)
+          this.cm && CodeMirror.commands.redo(this.cm)
+          this.refreshing = false
         }
         if (evt.data.type === 'refresh') {
+          if (data.worker) {
+            data.worker.terminate()
+          }
           clearTimeout(worker.timeout)
           worker.timeout = setTimeout(() => {
             prepWork()
-          }, 65)
+          }, 150)
         }
       })
       worker.postMessage({ type: 'process', paragraph: data.paragraph || sampleText })
@@ -94,6 +98,7 @@ export default {
     if (data.worker) {
       data.worker.postMessage({ type: 'app-init', paragraph: sampleText })
     }
+    // data.paragraph = sampleText
 
     // let { brain, lexicon } = readSentenceWords({ paragraph: sampleText })
     return data
@@ -243,6 +248,9 @@ export default {
       })
     },
     runUpdate () {
+      if (this.refreshing) {
+        return
+      }
       if (this.worker) {
         this.worker.postMessage({ type: 'refresh', paragraph: this.paragraph })
       }

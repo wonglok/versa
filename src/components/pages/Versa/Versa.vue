@@ -6,11 +6,17 @@
     </div>
     <div class="ed-right">
       <Tree
-        v-if="brain && brain.world"
+        v-if="brain && brain.world && show === 'dom-tree'"
         :world="brain.world"
         :child="brain.world"
       >
       </Tree>
+
+      <ForceGraph
+        v-if="brain && brain.world && show === 'force-graph'"
+        :world="brain.world"
+      ></ForceGraph>
+
       <!-- <pre style="background-color: white; max-width: 50vw; overflow: auto; max-height: 400px">{{ brain }}</pre> -->
       <router-link class="go-home" to="/">Home</router-link>
     </div>
@@ -22,6 +28,7 @@
 <script>
 import { codemirror } from 'vue-codemirror'
 import Tree from '@/components/parts/Tree/Tree.vue'
+import ForceGraph from '@/components/parts/ForceGraph/ForceGraph.vue'
 
 import CodeMirror from 'codemirror'
 import 'codemirror/keymap/sublime.js'
@@ -34,10 +41,12 @@ import NLPWorker from '@/components/parts/Data/nlp.worker.js'
 export default {
   components: {
     codemirror,
-    Tree
+    Tree,
+    ForceGraph
   },
   data () {
     let data = {
+      show: 'force-graph', // force-graph, dom-tree
       worker: false,
       brain: false,
       lexicon: {},
@@ -76,7 +85,7 @@ export default {
           let { brain, lexicon } = evt.data.result
           data.brain = brain
           data.lexicon = lexicon
-          data.typeList = this.getTypeList()
+          data.typeList = this.computeTypeList()
           this.refreshing = true
           this.cm && CodeMirror.commands.undo(this.cm)
           this.cm && CodeMirror.commands.redo(this.cm)
@@ -104,11 +113,11 @@ export default {
     return data
   },
   beforeMount () {
-    // this.typeList = this.getTypeList()
+    // this.typeList = this.computeTypeList()
     let self = this
     CodeMirror.defineMode('versa', () => {
       var parserState = {
-        quoteIsOpen: false
+        curlyQuoteIsOpen: false
       }
       return {
         token (stream, state) {
@@ -136,13 +145,13 @@ export default {
           }
 
           if (stream.match(/{/, false)) {
-            parserState.quoteIsOpen = true
+            parserState.curlyQuoteIsOpen = true
           }
           if (stream.match(/}/, false)) {
             quote = 'Quote'
-            parserState.quoteIsOpen = false
+            parserState.curlyQuoteIsOpen = false
           }
-          if (parserState.quoteIsOpen) {
+          if (parserState.curlyQuoteIsOpen) {
             quote = 'Quote'
           }
 
@@ -168,7 +177,7 @@ export default {
     // this.runUpdate()
   },
   methods: {
-    getTypeList () {
+    computeTypeList () {
       return [
         { keywords: this.getList({ typeOfTag: 'ParagraphTitle' }), name: 'ParagraphTitle' },
         { keywords: this.getList({ typeOfTag: 'Existence' }), name: 'Existence' },
@@ -220,9 +229,10 @@ export default {
     onCmReady (cm) {
       // console.log(cm)
       this.cm = cm
-      cm.toggleComment = () => {}
+      cm.toggleComment = () => {
+      }
       // cm.on('completion', () => {
-      //   this.typeList = this.getTypeList()
+      //   this.typeList = this.computeTypeList()
       //   setTimeout(() => {
       //     cm.refresh()
       //   }, 10)

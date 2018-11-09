@@ -15,22 +15,31 @@ let the earth, the rainbowverse and heaven be pizza and happiness.
 
 # Organise
 
-place the earth within the universe.
-place heaven within universe.
-place heaven within multiverse.
-place heaven on earth.
-place earth within rainbowverse.
+link multiverse with universe.
+link multiverse with rainbowverse.
+link multiverse with earth.
+
+link universe with multiverse.
+link universe with rainbowverse.
+link universe with earth.
+
+link rainbowverse with multiverse.
+link rainbowverse with universe.
+link rainbowverse with earth.
+
+link heaven with earth.
+link heaven with universe.
 
 # Extend description
 
 may moon exist.
 let moon be glowing.
-place moon around rainbowverse.
+link moon with rainbowverse.
 
 {{ let earth be glowing. }}
 may apple exist.
 let apple be fun.
-place apple in heaven.
+link apple with moon.
 `
 
 export let lexicon = {
@@ -163,90 +172,6 @@ mcgill.cleanQuote = (str) => {
   })
 }
 
-export const readSentence = ({ paragraph }) => {
-  let myLexi = JSON.parse(JSON.stringify(lexicon))
-  let world = []
-  let brain = { world, paragraph }
-  let worldAPI = makeWorldAPI({ world })
-
-  paragraph = mcgill.cleanQuote(paragraph)
-  paragraph = paragraph.replace(/\./g, '. ')
-
-  let refreshDictionary = () => {
-    nlp.plugin({
-      tags: {},
-      words: { ...myLexi },
-      patterns: {},
-      regex: {},
-      plurals: {}
-    })
-  }
-  refreshDictionary()
-
-  let doc = nlp(paragraph)
-
-  doc
-    // .sentences()
-    .data()
-    .map(s => s.text)
-    .forEach((sentence) => {
-      refreshDictionary()
-
-      nlp(sentence)
-        .match('may the? [*] exist')
-        .not('the')
-        .not('and')
-        .out('tags')
-        .forEach((tag) => {
-          worldAPI.provideByID(tag.normal)
-          worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Existence', item: tag })
-        })
-
-      nlp(sentence)
-        .match(`!exist? let *? #Existence+ *? be [*]`)
-        .not('the')
-        .not('and')
-        .out('tags')
-        .forEach((tag) => {
-          worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Being', item: tag })
-        })
-    })
-
-  refreshDictionary()
-
-  // exec with our lexicon
-  nlp(doc.out('text'))
-    .forEach((sentence) => {
-      sentence.match('#Existence+').out('array').forEach((existenceTag) => {
-        worldAPI.provideByID(existenceTag)
-        worldAPI.provideBeing(existenceTag, sentence.match('#Being+').out('array'))
-      })
-    })
-
-  nlp(doc.out('text'))
-    .match('place the? #Existence+ (at|in|on|near|within|around) the? #Existence+')
-    .forEach((sentence) => {
-      let parentPlaces = sentence
-        .match('place the? #Existence+ (at|in|on|near|within|around) the? [#Existence+]')
-        .not('the')
-        .out('array')
-
-      sentence
-        .match('#Existence+')
-        .out('array')
-        .filter(e => !parentPlaces.includes(e))
-        .forEach((existenceTag) => {
-          worldAPI.provideByID(existenceTag)
-          worldAPI.providePlacing(existenceTag, parentPlaces)
-        })
-    })
-
-  return {
-    lexicon: myLexi,
-    brain
-  }
-}
-
 export const readSentenceWords = ({ paragraph }) => {
   let myLexi = JSON.parse(JSON.stringify(lexicon))
   let world = []
@@ -308,10 +233,10 @@ export const readSentenceWords = ({ paragraph }) => {
     })
 
   nlp(doc.out('text'))
-    .match('place the? #Existence+ (at|in|on|near|within|around) the? #Existence+')
+    .match('link the? #Existence+ (at|in|on|near|with|within|around) the? #Existence+')
     .forEach((sentence) => {
       let parentPlaces = sentence
-        .match('place the? #Existence+ (at|in|on|near|within|around) the? [#Existence+]')
+        .match('link the? #Existence+ (at|in|on|near|with|within|around) the? [#Existence+]')
         .not('the')
         .out('array')
 

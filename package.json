@@ -14,10 +14,12 @@
     "deploy": "npm run build; npm run cp-redirect; npm run deploy-netlify;"
   },
   "dependencies": {
+    "3d-force-graph": "^1.41.1",
     "compromise": "^11.12.3",
     "node-emoji": "^1.8.1",
     "normalize.css": "^8.0.0",
     "textarea-caret": "^3.1.0",
+    "three-spritetext": "^1.0.6",
     "vue": "^2.5.2",
     "vue-codemirror": "^4.0.5",
     "vue-router": "^3.0.1"

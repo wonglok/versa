@@ -7,6 +7,7 @@
 <script>
 import ForceGraph3D from '3d-force-graph'
 import SpriteText from 'three-spritetext'
+import { emojify } from '@/components/parts/Data/NLPService.js'
 
 export default {
   props: {
@@ -29,6 +30,30 @@ export default {
         const sprite = new SpriteText(node.name)
         sprite.color = '#000000'
         sprite.textHeight = 5
+        sprite.fontSize = 90
+        sprite.fontFace = `'Inconsolata', 'Avenir', Helvetica, Arial, sans-serif`
+
+        // correct emoji print
+        const canvas = sprite._canvas
+        const ctx = canvas.getContext('2d')
+
+        const font = `normal ${sprite.fontSize * 0.9}px ${sprite.fontFace}`
+
+        ctx.font = font
+        const textWidth = ctx.measureText(sprite.text).width
+        canvas.width = textWidth
+        canvas.height = sprite.fontSize
+
+        ctx.font = font
+        ctx.fillStyle = sprite.color
+        ctx.textBaseline = 'bottom'
+        ctx.fillText(sprite.text, 0, canvas.height)
+
+        // Inject canvas into sprite
+        sprite._texture.image = canvas
+        sprite._texture.needsUpdate = true
+
+        sprite.scale.set(sprite.textHeight * canvas.width / canvas.height, sprite.textHeight)
         return sprite
       })
       .linkOpacity(0.5)
@@ -51,20 +76,24 @@ export default {
       console.log(this.world)
 
       let result = this.world.reduce((carry, item, i) => {
-        //
+        let emojis = item.data && item.data.be && emojify(item.data.be)
+        if (!emojis) {
+          emojis = ''
+        }
+
         // console.log(i)
         carry.nodes.push({
           id: i,
-          name: item.id
+          name: item.id + '\n' + emojis
         })
 
         //
         item.data && item.data.parentIDs && item.data.parentIDs.forEach((wItem) => {
-          console.log(item.id, wItem)
+          // console.log(item.id, wItem)
           let source = this.world.findIndex(w => w.id === wItem)
           let target = i
 
-          console.log(source, target)
+          // console.log(source, target)
           carry.links.push({
             source,
             color: '#4199a9',

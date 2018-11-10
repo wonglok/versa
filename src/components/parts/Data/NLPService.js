@@ -1,4 +1,5 @@
 const nlp = require('compromise')
+var emoji = require('node-emoji')
 
 export let sampleText = `## Verse Your Kindness.
 
@@ -7,39 +8,58 @@ export let sampleText = `## Verse Your Kindness.
 may the universe, the multiverse and the rainbowverse exist.
 may the heaven and the earth exist.
 
+may you exist.
+
 # Let things be
 
 let the universe and heaven be love and light.
 let the multiverse and heaven be dope and fun.
-let the earth, the rainbowverse and heaven be pizza and happiness.
+let you be happy.
+let rainbowverse be awesome.
 
 # Organise
 
 link multiverse with universe.
 link multiverse with rainbowverse.
-link multiverse with earth.
 
 link universe with multiverse.
-link universe with rainbowverse.
 link universe with earth.
 
 link rainbowverse with multiverse.
-link rainbowverse with universe.
-link rainbowverse with earth.
+link heaven with multiverse.
 
 link heaven with earth.
-link heaven with universe.
+
+link you with heaven.
+link you with moon.
+link you with rainbowverse.
 
 # Extend description
 
 may moon exist.
 let moon be glowing.
-link moon with rainbowverse.
+link earth with moon.
 
-{{ let earth be glowing. }}
+Star Quote
+{{ let earth be glowing. +}}
+Double Star Quote
+{{ let earth be glowing. ++}}
+
+Hidden Quote
+{{ let earth be glowing. -}}
+Doubble Hidden Quote
+{{ let earth be glowing. --}}
+
+Controversial Quote
+{{ let earth be glowing. +-}}
+Controversial Quote
+{{ let earth be glowing. -+}}
+
 may apple exist.
 let apple be fun.
+link apple with rainbowverse.
 link apple with moon.
+link apple with universe.
 `
 
 export let lexicon = {
@@ -85,6 +105,14 @@ export let mojis = {
   'joyful': '😃',
   'joy': '😃',
   'awesome': '🦄'
+}
+
+export const emojify = (arr) => {
+  let result = arr.reduce((str, item) => {
+    str += (mojis[item] || emoji.emojify(emoji.get(item), t => t) || item) + ' '
+    return str
+  }, '')
+  return result
 }
 
 export let getID = () => {

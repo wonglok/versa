@@ -62,7 +62,28 @@
 }
 
 .cm-Quote{
-  background: rgb(253, 255, 134, 0.5);
+  background: rgb(253, 255, 134, 0.55);
+}
+
+.cm-StarQuote{
+  background: rgba(255, 227, 134, 0.8);
+}
+
+.cm-DoubleStarQuote{
+  background: rgb(255, 203, 134);
+}
+
+.cm-HiddenQuote{
+  background: rgba(255, 134, 255, 0.8);
+}
+
+.cm-DoubleHiddenQuote{
+  background: rgb(212, 0, 255, 0.8);
+}
+
+.cm-ControversialQuote{
+  color: white;
+  background: rgb(4, 0, 255);
 }
 
 .cm-Existence{
@@ -71,7 +92,6 @@
 .cm-Being{
   border-bottom: rgb(31, 182, 202) solid 2px;
 }
-
 .cm-Quote.cm-Existence{
   border-bottom: hotpink solid 2px;
 }

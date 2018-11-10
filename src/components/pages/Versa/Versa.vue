@@ -117,7 +117,8 @@ export default {
     let self = this
     CodeMirror.defineMode('versa', () => {
       var parserState = {
-        curlyQuoteIsOpen: false
+        curlyQuoteIsOpen: false,
+        curlyQuoteName: 'Quote'
       }
       return {
         token (stream, state) {
@@ -144,15 +145,50 @@ export default {
             title += ' ParagraphTitle-1'
           }
 
+          if (stream.string.match(/}/, false)) {
+            quote = parserState.curlyQuoteName = 'Quote'
+            // parserState.curlyQuoteIsOpen = false
+          }
+          if (stream.string.match(/\+}/, false)) {
+            quote = parserState.curlyQuoteName = 'StarQuote'
+            // parserState.curlyQuoteIsOpen = false
+          }
+          if (stream.string.match(/\+\+}/, false)) {
+            quote = parserState.curlyQuoteName = 'DoubleStarQuote'
+            // parserState.curlyQuoteIsOpen = false
+          }
+
+          if (stream.string.match(/-}/, false)) {
+            quote = parserState.curlyQuoteName = 'HiddenQuote'
+            // parserState.curlyQuoteIsOpen = false
+          }
+          if (stream.string.match(/--}/, false)) {
+            quote = parserState.curlyQuoteName = 'DoubleHiddenQuote'
+            // parserState.curlyQuoteIsOpen = false
+          }
+
+          if (stream.string.match(/\+-}/, false)) {
+            quote = parserState.curlyQuoteName = 'ControversialQuote'
+            // parserState.curlyQuoteIsOpen = false
+          }
+          if (stream.string.match(/-\+}/, false)) {
+            quote = parserState.curlyQuoteName = 'ControversialQuote'
+            // parserState.curlyQuoteIsOpen = false
+          }
+
           if (stream.match(/{/, false)) {
             parserState.curlyQuoteIsOpen = true
           }
+
           if (stream.match(/}/, false)) {
-            quote = 'Quote'
+            quote = parserState.curlyQuoteName
             parserState.curlyQuoteIsOpen = false
           }
+
           if (parserState.curlyQuoteIsOpen) {
-            quote = 'Quote'
+            quote = parserState.curlyQuoteName
+          } else {
+            parserState.curlyQuoteName = 'Quote'
           }
 
           let output = (detectedType ? detectedType + ' ' : '') + title + quote
@@ -202,6 +238,7 @@ export default {
         ['wordA', 'relatedWordB']
       ]
       */
+
       /* eslint-disable */
       var comp = this.typeList.map(tl => tl.keywords)
       return new Promise(function(resolve, reject) {

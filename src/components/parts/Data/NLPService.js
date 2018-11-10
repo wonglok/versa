@@ -15,7 +15,7 @@ may you exist.
 let the universe and heaven be love and light.
 let the multiverse and heaven be dope and fun.
 let you be happy.
-let rainbowverse be awesome.
+let rainbowverse be love, awesome and dope.
 
 # Organise
 
@@ -243,6 +243,7 @@ export const readSentenceWords = ({ paragraph }) => {
         .match(`!exist? let *? #Existence+ *? be [*]`)
         .not('the')
         .not('and')
+        .terms()
         .out('tags')
         .forEach((tag) => {
           worldAPI.tagsToLexicon({ lexicon: myLexi, tagName: 'Being', item: tag })
@@ -256,7 +257,7 @@ export const readSentenceWords = ({ paragraph }) => {
     .forEach((sentence) => {
       sentence.match('#Existence+').out('array').forEach((existenceTag) => {
         worldAPI.provideByID(existenceTag)
-        worldAPI.provideBeing(existenceTag, sentence.match('#Being+').out('array'))
+        worldAPI.provideBeing(existenceTag, sentence.match('#Being+').terms().out('array'))
       })
     })
 

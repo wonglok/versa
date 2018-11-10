@@ -54,6 +54,7 @@ export default {
         sprite._texture.needsUpdate = true
 
         sprite.scale.set(sprite.textHeight * canvas.width / canvas.height, sprite.textHeight)
+        sprite.material.transparent = true
         return sprite
       })
       .linkOpacity(0.5)

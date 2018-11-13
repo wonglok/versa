@@ -46,7 +46,7 @@
   color: green;
   /* text-decoration: underline; */
 }
-.cm-ParagraphTitle-3{
+.cm-ParagraphTitle-1{
   font-size: 35px;
   font-weight: bold;
   border-bottom: rgb(31, 182, 202) dashed 2px;
@@ -56,7 +56,7 @@
   font-weight: bold;
   border-bottom: rgb(31, 182, 202) dashed 2px;
 }
-.cm-ParagraphTitle-1{
+.cm-ParagraphTitle-3{
   font-weight: bold;
   border-bottom: rgb(31, 182, 202) dashed 2px;
 }
@@ -87,14 +87,18 @@
 }
 
 .cm-Existence{
+  padding-bottom: 1px;
   border-bottom: hotpink solid 2px;
 }
 .cm-Being{
+  padding-bottom: 1px;
   border-bottom: rgb(31, 182, 202) solid 2px;
 }
 .cm-Quote.cm-Existence{
+  padding-bottom: 1px;
   border-bottom: hotpink solid 2px;
 }
 .cm-Quote.cm-Being{
+  padding-bottom: 1px;
   border-bottom: rgb(31, 182, 202) solid 2px;
 }

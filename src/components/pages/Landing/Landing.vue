@@ -10,7 +10,10 @@
         </h3>
 
         <router-link tag="h2" to="/versa" class="enter">
-          Enter
+          Enter Versa
+        </router-link>
+        <router-link tag="h5" to="/stratus" class="enter">
+          Enter Stratus
         </router-link>
 
         <div class="desc">

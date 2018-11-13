@@ -1,23 +1,23 @@
 const nlp = require('compromise')
 var emoji = require('node-emoji')
 
-export let sampleText = `## Verse Your Kindness.
+export let sampleText = `# Verse Your Kindness.
 
-# Make existence
+### Make existence
 
 may the universe, the multiverse and the rainbowverse exist.
 may the heaven and the earth exist.
 
 may you exist.
 
-# Let things be
+### Let things be
 
 let the universe and heaven be love and light.
 let the multiverse and heaven be dope and fun.
 let you be happy.
 let rainbowverse be love, awesome and dope.
 
-# Organise
+### Organise
 
 link multiverse with universe.
 link multiverse with rainbowverse.
@@ -34,7 +34,7 @@ link you with heaven.
 link you with moon.
 link you with rainbowverse.
 
-# Extend description
+### Extend description
 
 may moon exist.
 let moon be glowing.

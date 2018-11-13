@@ -42,6 +42,10 @@ module.exports = {
     rules: [
       ...(config.dev.useEslint ? [createLintingRule()] : []),
       {
+        test: /\.(csv|txt|kdb)(\?.*)?$/,
+        use: 'raw-loader'
+      },
+      {
         test: /\.worker\.js$/,
         use: { loader: 'worker-loader' }
       },

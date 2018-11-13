@@ -1,5 +1,5 @@
 <template>
-  <div ref="force-3d" class="full">
+  <div ref="force-3d" class="full force-3d">
 
   </div>
 </template>
@@ -61,6 +61,8 @@ export default {
       .linkWidth(0.3)
       .linkResolution(24)
 
+    let renderer = this.Graph.renderer()
+    renderer.setPixelRatio(window.devicePixelRatio || 1.0)
     this.Graph.backgroundColor('#ffffff')
     this.Graph.width(rect.width)
     this.Graph.height(rect.height)
@@ -122,6 +124,10 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.force-3d{
+  width: 100%;
+  max-width: 50vw;
+  height: 100%;
+}
 </style>

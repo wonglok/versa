@@ -14,6 +14,16 @@ export default new Router({
       component: require('@/components/HelloWorld').default
     },
     {
+      path: '/stratus',
+      name: 'Stratus',
+      component: require('@/components/pages/Stratus/Stratus.vue').default
+    },
+    {
+      path: '/test',
+      name: 'TestDB',
+      component: () => import('@/components/pages/TestDB/TestDB.vue')
+    },
+    {
       path: '/versa',
       name: 'Versa',
       component: require('@/components/pages/Versa/Versa.vue').default

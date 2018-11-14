@@ -61,6 +61,10 @@
   border-bottom: rgb(31, 182, 202) dashed 2px;
 }
 
+.cm-Rhyme{
+  border-bottom: rgba(52, 209, 20, 0.55) solid 2px;
+}
+
 .cm-Quote{
   background: rgb(253, 255, 134, 0.55);
 }

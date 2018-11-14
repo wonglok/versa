@@ -66,6 +66,8 @@ const levenshteinDistance = (s, t) => {
 //   return [search, ...result.map(r => r.toLowerCase())]
 // }
 
+let synn = require('@/mcgill-db/similar-words.json')
+
 let roundexCSV = require('@/mcgill-db/roundex.csv')
 let rows = roundexCSV.split('\n')
 rows.shift()
@@ -96,7 +98,7 @@ const searchFuzzy = ({ search }) => {
   // })
   console.log(searchResult)
 
-  searchResult = searchResult.filter((e, i) => i < 20)
+  // searchResult = searchResult.filter((e, i) => i < 20)
   return [search, ...searchResult.map(r => r.toLowerCase())]
 }
 
@@ -106,6 +108,10 @@ self.addEventListener('message', (event) => {
     let result = words.reduce((suggestions, eachWord) => {
       let result = searchFuzzy({ search: eachWord })
       suggestions.push(result)
+
+      let filteredSynn = synn.filter(arr => arr.includes(eachWord))
+      suggestions.push(...filteredSynn)
+
       return suggestions
     }, [])
 

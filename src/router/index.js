@@ -13,10 +13,15 @@ export default new Router({
       name: 'HelloWorld',
       component: require('@/components/HelloWorld').default
     },
+    // {
+    //   path: '/stratus',
+    //   name: 'Stratus',
+    //   component: require('@/components/pages/Stratus/Stratus.vue').default
+    // },
     {
-      path: '/stratus',
-      name: 'Stratus',
-      component: require('@/components/pages/Stratus/Stratus.vue').default
+      path: '/cmu',
+      name: 'CMU',
+      component: require('@/components/pages/CMU/CMU.vue').default
     },
     {
       path: '/test',

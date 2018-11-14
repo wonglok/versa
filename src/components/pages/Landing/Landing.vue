@@ -12,8 +12,11 @@
         <router-link tag="h2" to="/versa" class="enter">
           Enter Versa
         </router-link>
-        <router-link tag="h5" to="/stratus" class="enter">
+        <!-- <router-link tag="h5" to="/stratus" class="enter">
           Enter Stratus
+        </router-link> -->
+        <router-link tag="h5" to="/cmu" class="enter">
+          Enter CMU Rhyme
         </router-link>
 
         <div class="desc">

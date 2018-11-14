@@ -1,9 +1,28 @@
 <template>
-<div class="full">
-  <codemirror class="full" @ready="onCmReady" v-model="paragraph" :options="cmOptions"></codemirror>
-  <div class="loading-div">
-    <h1>downloading...</h1>
+<div class="full" :class="{ processing: workerStatus === 'processing' }">
+  <div class="full editor-lr">
+    <div class="ed-left">
+      <codemirror class="full" @ready="onCmReady" v-model="paragraph" :options="cmOptions"></codemirror>
+      <div class="loading-div" v-if="workerStatus">
+        <h1 v-if="workerStatus === 'download'">Engine Loading...</h1>
+        <h1 v-if="workerStatus === 'processing'">Processing...</h1>
+      </div>
+    </div>
+    <div class="ed-right">
+      <h3>Synonyms: {{ current.word }}</h3>
+      <ul class="rhymes-suggestions">
+        <li :key="lii" v-for="(li, lii) in current.synn" @click="replace(li)">{{ li }}</li>
+      </ul>
+
+      <h3>Rhyme: {{ current.word }}</h3>
+      <ul class="rhymes-suggestions">
+        <li :key="lii" v-for="(li, lii) in current.rhymes" @click="replace(li)">{{ li }}</li>
+      </ul>
+
+      <router-link class="go-home" to="/">Home</router-link>
+    </div>
   </div>
+
 </div>
 </template>
 
@@ -13,6 +32,7 @@ import CodeMirror from 'codemirror'
 import 'codemirror/keymap/sublime.js'
 import 'codemirror/addon/hint/show-hint.js'
 import RhymeWorker from './cmu-dict/rhyme.worker.js'
+import uniq from 'lodash.uniq'
 
 export default {
   components: {
@@ -20,17 +40,24 @@ export default {
   },
   data () {
     let appdata = {
+      workerStatus: false,
       rhymes: [],
+      synn: [],
       suggestions: [],
       disableRefresh: false,
       paragraph: null,
       cm: false,
+      current: {
+        word: '',
+        rhymes: [],
+        synn: []
+      },
       cmOptions: {
-        extraKeys: {'Ctrl-Space': 'autocomplete'},
+        extraKeys: { 'Ctrl-Space': 'autocomplete' },
         // codemirror options
         keyMap: 'sublime',
         tabSize: 2,
-        mode: 'stratus',
+        mode: 'cmuRHYME',
         // theme: 'chrome',
         lineWrapping: true,
         lineNumbers: true,
@@ -48,11 +75,15 @@ export default {
       clearPITimeout: 0,
       acTimeout: 0
     }
+    appdata.workerStatus = 'download'
     appdata.worker = new RhymeWorker()
     var handler = (evt) => {
       if (evt.data.type === 'done-suggestions') {
-        appdata.rhymes = evt.data.suggestions
-        appdata.suggestions = [...appdata.rhymes]
+        appdata.workerStatus = 'ready'
+
+        appdata.rhymes = evt.data.rhymes
+        appdata.synn = evt.data.synn
+        appdata.suggestions = [...appdata.synn]
         if (this.cm) {
           this.disableRefresh = true
           let curosr = this.cm.getCursor()
@@ -84,10 +115,11 @@ export default {
       if (this.disableRefresh) {
         return
       }
+      this.workerStatus = 'processing'
       clearTimeout(this.clearPITimeout)
       this.clearPITimeout = setTimeout(() => {
         this.worker.postMessage({ type: 'process', paragraph: this.paragraph })
-      }, 150)
+      }, 500)
     },
     onCmReady (cm) {
       // console.log(cm)
@@ -114,6 +146,18 @@ export default {
         }
       })
     },
+    replace (replaceMe) {
+      var cm = this.cm
+      var oldCursor = cm.getCursor()
+      var A1 = oldCursor.line
+      var A2 = oldCursor.ch
+
+      var B1 = cm.findWordAt({line: A1, ch: A2}).anchor.ch
+      var B2 = cm.findWordAt({line: A1, ch: A2}).head.ch
+
+      cm.replaceRange(replaceMe, {line: A1, ch: B1}, {line: A1, ch: B2})
+      cm.setCursor({line: A1, ch: B1})
+    },
     handleWordSuggestion (cm, option) {
       /*
       [
@@ -127,18 +171,36 @@ export default {
 
       return new Promise((resolve, reject) => {
         let run = () => {
-          var comp = this.suggestions
-          console.log(comp)
+          var suggs = this.suggestions
+          console.log(suggs)
           var cursor = cm.getCursor(), line = cm.getLine(cursor.line)
           var start = cursor.ch, end = cursor.ch
           while (start && /\w/.test(line.charAt(start - 1))) --start
           while (end < line.length && /\w/.test(line.charAt(end))) ++end
           var word = line.slice(start, end).toLowerCase()
-          for (var i = 0; i < comp.length; i++) {
-            if (comp[i].indexOf(word) !== -1) {
+          let flatMe = (c, arr) => {
+            arr.forEach((i) => {
+              if (!c.includes(i)) {
+                i = i.replace(/_/, ' ')
+                c.push(i)
+              }
+            })
+            c = uniq(c)
+            return c
+          }
+          this.current = {
+            ...this.current,
+            cursor,
+            word,
+            rhymes: this.rhymes.filter(r => r.includes(word)).reduce(flatMe, []),
+            synn: this.synn.filter(r => r.includes(word)).reduce(flatMe, [])
+          }
+
+          for (var i = 0; i < suggs.length; i++) {
+            if (suggs[i].indexOf(word) !== -1) {
               // console.log(word)
               return resolve({
-                list: comp[i].filter((i, e) => e < 20),
+                list: this.current.synn.filter((e, i) => i < 15),
                 from: CodeMirror.Pos(cursor.line, start),
                 to: CodeMirror.Pos(cursor.line, end)
               })
@@ -147,7 +209,8 @@ export default {
           return resolve(null)
         }
 
-        setTimeout(run, 0)
+        run()
+        // setTimeout(run, 0)
       })
       /* eslint-enable */
     }
@@ -161,7 +224,7 @@ export default {
     // this.typeList = this.computeTypeList()
     var self = this
 
-    CodeMirror.defineMode('stratus', () => {
+    CodeMirror.defineMode('cmuRHYME', () => {
       var parserState = {
         curlyQuoteIsOpen: false,
         curlyQuoteName: 'Quote'
@@ -262,9 +325,34 @@ export default {
 .loading-div{
   position: absolute;
   bottom: 0px;
-  left: 0px;
-  width: 100%;
+  right: 0px;
+  width: 50%;
   text-align: center;
   /* height: 30px; */
+}
+.loading-div h1{
+  margin-top: 10px;
+  font-size: 24px;
+}
+.go-home{
+  padding: 0px 5px;
+  background-color: white;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+.ed-right {
+  max-height: 100%;
+  overflow: auto;
+  /* border-left: grey solid 1px; */
+  box-sizing: border-box;
+  background: linear-gradient(-135deg, rgba(255, 105, 180, 0.5098039215686274), rgba(0, 255, 255, 0.5));
+}
+.rhymes-suggestions li{
+  cursor: pointer;
+  margin-bottom: 0px;
+}
+.rhymes-suggestions li:hover{
+  text-decoration: underline;
 }
 </style>

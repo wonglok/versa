@@ -129,6 +129,29 @@
   border: grey solid 1px;
 }
 
-.processing, .processing * {
-  cursor: wait;
+html, body, .processing, .processing * {
+  cursor: url(./img/curosr-loading.png), auto;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 1s, transform 1s;
+  transition-timing-function: cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+  transform: perspective(100vmax) rotateY(30deg) translateX(10vmax);
+}
+
+.fade2-enter-active, .fade2-leave-active {
+  transition: opacity 1s, transform 1s;
+  transition-timing-function: cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+.fade2-enter, .fade2-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+  transform: perspective(100vmax) rotateX(-30deg) translateY(10vmax);
+}
+
+
+.no-overflow{
+  overflow: hidden;
 }

@@ -33,6 +33,10 @@ import ForceGraph from '@/components/parts/ForceGraph/ForceGraph.vue'
 import CodeMirror from 'codemirror'
 import 'codemirror/keymap/sublime.js'
 import 'codemirror/addon/hint/show-hint.js'
+import 'codemirror/addon/fold/foldcode.js'
+import 'codemirror/addon/fold/foldgutter.js'
+import 'codemirror/addon/fold/brace-fold.js'
+
 import { sampleText } from '@/components/parts/Data/NLPService.js'
 /* eslint-disable */
 import NLPWorker from '@/components/parts/Data/nlp.worker.js'
@@ -54,7 +58,7 @@ export default {
       paragraph: null,
       cm: false,
       cmOptions: {
-        extraKeys: {'Ctrl-Space': 'autocomplete'},
+        extraKeys: {'Ctrl-Space': 'autocomplete', 'Ctrl-Q': function (cm) { cm.foldCode(cm.getCursor()) }},
         // codemirror options
         keyMap: 'sublime',
         tabSize: 2,
@@ -62,6 +66,10 @@ export default {
         // theme: 'chrome',
         lineWrapping: true,
         lineNumbers: true,
+        foldGutter: true,
+
+        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+
         line: true,
         hintOptions: {
           // customKeys: {
@@ -115,12 +123,69 @@ export default {
   beforeMount () {
     // this.typeList = this.computeTypeList()
     let self = this
+
+    CodeMirror.registerHelper('fold', 'versa', function (cm, start) {
+      function getAllIndexes (arr, val) {
+        var indexes = []
+        var i = 0
+        for (i = 0; i < arr.length; i++) {
+          if (arr[i] === val) {
+            indexes.push(i)
+          }
+        }
+
+        return indexes
+      }
+
+      let currentString = cm.getLine(start.line)
+      let regex = /{(.*?){(.*?)}(.*?)}/gi
+
+      let matchings = regex.exec(currentString)
+      if (matchings) {
+        let detected = matchings[0]
+        let idxs = getAllIndexes(detected, '{')
+
+        if (matchings[1]) {
+          return {
+            from: CodeMirror.Pos(start.line, idxs[0] + 1),
+            to: CodeMirror.Pos(start.line, idxs[1])
+          }
+        }
+      }
+
+      // if (matchings) {
+      //   let wholeQuote = matchings[0]
+
+      //   return {
+      //     from: CodeMirror.Pos(start.line, matchings.index),
+      //     to: CodeMirror.Pos(end.line, matchStr.index)
+      //   }
+      // } else {
+      //   return undefined
+      // }
+
+      // let lastLineNumber = cm.lastLine()
+
+      // console.log(matchStart)
+      // let startLength = start.line.length
+
+      // if (!matchStart) {
+      //   return undefined
+      // } else
+
+      // return {
+      //   from: CodeMirror.Pos(start.line, startLength),
+      //   to: CodeMirror.Pos(end, cm.getLine(end).length)
+      // }
+    })
+
     CodeMirror.defineMode('versa', () => {
-      var parserState = {
+      var parserRAM = {
         curlyQuoteIsOpen: false,
         curlyQuoteName: 'Quote'
       }
       return {
+
         token (stream, state) {
           let title = ''
           let quote = ''
@@ -145,51 +210,49 @@ export default {
             title += ' ParagraphTitle-1'
           }
 
-          if (stream.string.match(/}/, false)) {
-            quote = parserState.curlyQuoteName = 'Quote'
-            // parserState.curlyQuoteIsOpen = false
-          }
-          if (stream.string.match(/\+}/, false)) {
-            quote = parserState.curlyQuoteName = 'StarQuote'
-            // parserState.curlyQuoteIsOpen = false
-          }
-          if (stream.string.match(/\+\+}/, false)) {
-            quote = parserState.curlyQuoteName = 'DoubleStarQuote'
-            // parserState.curlyQuoteIsOpen = false
-          }
+          function tagQuote () {
+            if (stream.string.match(/}/, false)) {
+              quote = parserRAM.curlyQuoteName = 'Quote'
+            }
+            if (stream.string.match(/\+}/, false)) {
+              quote = parserRAM.curlyQuoteName = 'StarQuote'
+            }
+            if (stream.string.match(/\+\+}/, false)) {
+              quote = parserRAM.curlyQuoteName = 'DoubleStarQuote'
+            }
 
-          if (stream.string.match(/-}/, false)) {
-            quote = parserState.curlyQuoteName = 'HiddenQuote'
-            // parserState.curlyQuoteIsOpen = false
-          }
-          if (stream.string.match(/--}/, false)) {
-            quote = parserState.curlyQuoteName = 'DoubleHiddenQuote'
-            // parserState.curlyQuoteIsOpen = false
-          }
+            if (stream.string.match(/-}/, false)) {
+              quote = parserRAM.curlyQuoteName = 'HiddenQuote'
+            }
+            if (stream.string.match(/--}/, false)) {
+              quote = parserRAM.curlyQuoteName = 'DoubleHiddenQuote'
+            }
 
-          if (stream.string.match(/\+-}/, false)) {
-            quote = parserState.curlyQuoteName = 'ControversialQuote'
-            // parserState.curlyQuoteIsOpen = false
-          }
-          if (stream.string.match(/-\+}/, false)) {
-            quote = parserState.curlyQuoteName = 'ControversialQuote'
-            // parserState.curlyQuoteIsOpen = false
+            if (stream.string.match(/\+-}/, false)) {
+              quote = parserRAM.curlyQuoteName = 'ControversialQuote'
+            }
+            if (stream.string.match(/-\+}/, false)) {
+              quote = parserRAM.curlyQuoteName = 'ControversialQuote'
+            }
           }
 
           if (stream.match(/{/, false)) {
-            parserState.curlyQuoteIsOpen = true
+            parserRAM.curlyQuoteIsOpen = true
           }
-
           if (stream.match(/}/, false)) {
-            quote = parserState.curlyQuoteName
-            parserState.curlyQuoteIsOpen = false
+            parserRAM.curlyQuoteIsOpen = false
+            tagQuote()
+          }
+          if (parserRAM.curlyQuoteIsOpen) {
+            tagQuote()
           }
 
-          if (parserState.curlyQuoteIsOpen) {
-            quote = parserState.curlyQuoteName
-          } else {
-            parserState.curlyQuoteName = 'Quote'
-          }
+          // if (parserRAM.curlyQuoteIsOpen) {
+          //   quote = parserRAM.curlyQuoteName
+          // } else {
+          //   parserRAM.curlyQuoteName = ''
+          //   quote = ''
+          // }
 
           let output = (detectedType ? detectedType + ' ' : '') + title + quote
           if (detectedType === null) {

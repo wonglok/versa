@@ -12,7 +12,7 @@ rows.map((row) => {
     dict[w].push(words.slice(1))
   }
 })
-let synn = require('@/mcgill-db/similar-words.json')
+// let synn = require('@/mcgill-db/similar-words.json')
 
 me.pronounce = function (word) {
   return dict[word.toUpperCase()]
@@ -82,13 +82,13 @@ self.addEventListener('message', (event) => {
       return suggestions
     }, [])
 
-    let docSynn = words.reduce((suggestions, eachWord) => {
-      let filteredSynn = synn.filter(arr => arr.includes(eachWord))
-      suggestions.push(...filteredSynn)
-      return suggestions
-    }, [])
+    // let docSynn = words.reduce((suggestions, eachWord) => {
+    //   let filteredSynn = synn.filter(arr => arr.includes(eachWord))
+    //   suggestions.push(...filteredSynn)
+    //   return suggestions
+    // }, [])
 
-    self.postMessage({ type: 'done-suggestions', rhymes: docRhymes, synn: docSynn })
+    self.postMessage({ type: 'done-suggestions', rhymes: docRhymes, synn: [] })
     console.log('sending back NLP result....')
   }
 

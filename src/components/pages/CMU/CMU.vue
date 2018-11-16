@@ -3,23 +3,43 @@
   <div class="full editor-lr">
     <div class="ed-left">
       <codemirror class="full" @ready="onCmReady" v-model="paragraph" :options="cmOptions"></codemirror>
-      <div class="loading-div" v-if="workerStatus">
-        <h1 v-if="workerStatus === 'download'">Engine Loading...</h1>
-        <h1 v-if="workerStatus === 'processing'">Processing...</h1>
-      </div>
+
     </div>
     <div class="ed-right">
-      <h3>Synonyms: {{ current.word }}</h3>
-      <ul class="rhymes-suggestions">
-        <li :key="lii" v-for="(li, lii) in current.synn" @click="replace(li)">{{ li }}</li>
-      </ul>
+      <div class="full ed-right-item" v-if="current.word && suggestions.length > 0">
+        <!-- <h3>Synonyms: {{ current.word }}</h3>
+        <ul class="rhymes-suggestions">
+          <li :key="lii" v-for="(li, lii) in current.synn" @click="replace(li)">{{ li }}</li>
+        </ul> -->
+        <h2>Current Word: {{ current.word }}</h2>
+        <h3>Rhyme</h3>
+        <ul class="rhymes-suggestions">
+          <li :key="lii" v-for="(li, lii) in current.rhymes" @click="replace(li)">{{ li }}</li>
+        </ul>
 
-      <h3>Rhyme: {{ current.word }}</h3>
-      <ul class="rhymes-suggestions">
-        <li :key="lii" v-for="(li, lii) in current.rhymes" @click="replace(li)">{{ li }}</li>
-      </ul>
+        <router-link class="go-home" to="/">Home</router-link>
+      </div>
+      <div class="full ed-right-item" v-else-if="!current.word && suggestions.length > 0">
+        <!-- <h3>Synonyms: {{ current.word }}</h3>
+        <ul class="rhymes-suggestions">
+          <li :key="lii" v-for="(li, lii) in current.synn" @click="replace(li)">{{ li }}</li>
+        </ul> -->
+        <h2>Quotes:</h2>
+        <ul class="rhymes-suggestions">
+          <li :key="lii" v-for="(li, lii) in quotes" @click="replace(li)">{{ li }}</li>
+        </ul>
+        <router-link class="go-home" to="/">Home</router-link>
+      </div>
 
-      <router-link class="go-home" to="/">Home</router-link>
+      <div class="loading-div" v-if="workerStatus">
+        <transition name="fade2">
+          <h1 v-if="workerStatus === 'download'">Engine Loading...</h1>
+        </transition>
+        <transition name="fade2">
+          <h1 v-if="workerStatus === 'processing'">Processing...</h1>
+        </transition>
+      </div>
+
     </div>
   </div>
 
@@ -83,7 +103,7 @@ export default {
 
         appdata.rhymes = evt.data.rhymes
         appdata.synn = evt.data.synn
-        appdata.suggestions = [...appdata.synn]
+        appdata.suggestions = [...appdata.rhymes]
         if (this.cm) {
           this.disableRefresh = true
           let curosr = this.cm.getCursor()
@@ -116,6 +136,9 @@ export default {
         return
       }
       this.workerStatus = 'processing'
+      if (this.suggestions.length === 0) {
+        this.workerStatus = 'download'
+      }
       clearTimeout(this.clearPITimeout)
       this.clearPITimeout = setTimeout(() => {
         this.worker.postMessage({ type: 'process', paragraph: this.paragraph })
@@ -200,7 +223,7 @@ export default {
             if (suggs[i].indexOf(word) !== -1) {
               // console.log(word)
               return resolve({
-                list: this.current.synn.filter((e, i) => i < 15),
+                list: suggs[i].filter((e, i) => i < 10),
                 from: CodeMirror.Pos(cursor.line, start),
                 to: CodeMirror.Pos(cursor.line, end)
               })
@@ -341,12 +364,24 @@ export default {
   bottom: 20px;
   right: 20px;
 }
+.editor-lr{
+  background: linear-gradient(-45deg, rgba(255, 105, 180, 0.5098039215686274), rgba(0, 255, 255, 0.5));
+}
+.ed-left{
+  width: 50%;
+  background: none;
+}
 .ed-right {
+  width: 50%;
   max-height: 100%;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   /* border-left: grey solid 1px; */
   box-sizing: border-box;
-  background: linear-gradient(-135deg, rgba(255, 105, 180, 0.5098039215686274), rgba(0, 255, 255, 0.5));
+  background: rgba(255,255,255,0.5);
+}
+.ed-right-item {
+  background: linear-gradient(45deg, rgba(255, 105, 180, 0.5098039215686274), rgba(0, 255, 255, 0.5));
 }
 .rhymes-suggestions li{
   cursor: pointer;

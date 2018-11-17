@@ -40,20 +40,23 @@ may moon exist.
 let moon be glowing.
 link earth with moon.
 
+### Quote Folding
+Yesterday I learned about love, which {Love {is the greatest gift.}}
+
+
+### Quote Stars
 Star Quote
-{{ let earth be glowing. +}}
+{{ Star, let earth be glowing.+}}
 Double Star Quote
-{{ let earth be glowing. ++}}
+{{ Double Star, let earth be glowing.++}}
 
 Hidden Quote
-{{ let earth be glowing. -}}
-Doubble Hidden Quote
-{{ let earth be glowing. --}}
+{{ hidden, let earth be glowing.-}}
 
 Controversial Quote
-{{ let earth be glowing. +-}}
+{{ ControversialA, let earth be glowing.+-}}
 Controversial Quote
-{{ let earth be glowing. -+}}
+{{ ControversialB, let earth be glowing.-+}}
 
 may apple exist.
 let apple be fun.

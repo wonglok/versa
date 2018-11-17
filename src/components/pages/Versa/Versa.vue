@@ -17,8 +17,23 @@
         :world="brain.world"
       ></ForceGraph>
 
+      <QuoteTree
+        v-if="brain && brain.world && show === 'quote-tree'"
+        :paragraph="paragraph"
+      ></QuoteTree>
+
+      <QuoteList
+        v-if="brain && brain.world && show === 'quote-list'"
+        :paragraph="paragraph"
+      ></QuoteList>
+
       <!-- <pre style="background-color: white; max-width: 50vw; overflow: auto; max-height: 400px">{{ brain }}</pre> -->
-      <router-link class="go-home" to="/">Home</router-link>
+      <div class="go-home" >
+        <button @click="show = 'quote-tree'">Quote Tree</button>
+        <button @click="show = 'quote-list'">Quote List</button>
+        <button @click="show = 'force-graph'">Force Graph</button>
+        <router-link to="/">Home</router-link>
+      </div>
     </div>
   </div>
 
@@ -29,6 +44,8 @@
 import { codemirror } from 'vue-codemirror'
 import Tree from '@/components/parts/Tree/Tree.vue'
 import ForceGraph from '@/components/parts/ForceGraph/ForceGraph.vue'
+import QuoteTree from '@/components/parts/QuoteTree/QuoteTree.vue'
+import QuoteList from '@/components/parts/QuoteTree/QuoteList.vue'
 
 import CodeMirror from 'codemirror'
 import 'codemirror/keymap/sublime.js'
@@ -46,11 +63,13 @@ export default {
   components: {
     codemirror,
     Tree,
-    ForceGraph
+    ForceGraph,
+    QuoteTree,
+    QuoteList
   },
   data () {
     let data = {
-      show: 'force-graph', // force-graph, dom-tree
+      show: 'quote-list', // force-graph, dom-tree, quote-tree, quote-list
       worker: false,
       brain: false,
       lexicon: {},
@@ -95,8 +114,10 @@ export default {
           data.lexicon = lexicon
           data.typeList = this.computeTypeList()
           this.refreshing = true
+          let curosr = this.cm.getCursor()
           this.cm && CodeMirror.commands.undo(this.cm)
           this.cm && CodeMirror.commands.redo(this.cm)
+          this.cm.setCursor({ line: curosr.line, ch: curosr.ch })
           this.refreshing = false
         }
         if (evt.data.type === 'refresh') {
@@ -138,7 +159,7 @@ export default {
       }
 
       let currentString = cm.getLine(start.line)
-      let regex = /{(.*?){(.*?)}(.*?)}/gi
+      let regex = /.*?{(.*?){(.*?)}(.*?)}/gi
 
       let matchings = regex.exec(currentString)
       if (matchings) {
@@ -238,6 +259,7 @@ export default {
 
           if (stream.match(/{/, false)) {
             parserRAM.curlyQuoteIsOpen = true
+            tagQuote()
           }
           if (stream.match(/}/, false)) {
             parserRAM.curlyQuoteIsOpen = false
@@ -285,7 +307,6 @@ export default {
     },
     getList ({ typeOfTag }) {
       let bucket = []
-
       return Object.keys(this.lexicon).reduce((bucket, keyname) => {
         if (this.lexicon[keyname].includes(typeOfTag) && !bucket.includes(keyname)) {
           bucket.push(keyname)
@@ -311,6 +332,7 @@ export default {
           while (start && /\w/.test(line.charAt(start - 1))) --start
           while (end < line.length && /\w/.test(line.charAt(end))) ++end
           var word = line.slice(start, end).toLowerCase()
+
           for (var i = 0; i < comp.length; i++) {
             if (comp[i].indexOf(word) !== -1) {
               // console.log(word)
@@ -332,7 +354,7 @@ export default {
       cm.toggleComment = () => {
       }
       // cm.on('completion', () => {
-      //   this.typeList = this.computeTypeList()
+      //   this.typeList = this.computeTypeList()`
       //   setTimeout(() => {
       //     cm.refresh()
       //   }, 10)
@@ -364,13 +386,17 @@ export default {
       if (this.worker) {
         this.worker.postMessage({ type: 'refresh', paragraph: this.paragraph })
       }
+      if (this.cm) {
+        clearTimeout(this.foldTimer)
+        this.foldTimer = setTimeout(() => {
+          CodeMirror.commands.foldAll(this.cm)
+        }, 1000)
+      }
     }
   },
   watch: {
     paragraph () {
-      this.$nextTick(() => {
-        this.runUpdate()
-      })
+      this.runUpdate()
     }
   }
 }
